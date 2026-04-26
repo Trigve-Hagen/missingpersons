@@ -184,3 +184,12 @@ Working on the database implementation.
  - Have prompt ask a list of specific questions.
  - Flag recent updates of interest, save it to a database, notify user of entries.
 
+### The Multiple Model Strategy
+List all people starting with the main family and working through everyone they know. Get their purchasing history for 3  to 6 months maybe a year before the person turns up missing.
+- Create multiple models specific to one item - softmax logits equals a probability distribution highlighting those that have a higher probability of being nefarious.
+  - Renting a rent a car (more nefarious behaviour) as apposed to not; not so nefarious
+  - buying gas closer to the crime scene equals (more nefarious behaviour) farther away not so nefarious
+  - mobile phone GPS tracking close to the crime scene equals (more nefarious) as apposed to being far away would equal less nefarious.
+  - car GPS tracking close to the crime scene equals (more nefarious) as apposed to being far away would equal less nefarious.
+When you have delegated a small task to one model and you have 50 models pointing a group of people that group of people will have a higher probability of being involved.
+
