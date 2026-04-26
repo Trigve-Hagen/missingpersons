@@ -193,3 +193,11 @@ List all people starting with the main family and working through everyone they 
   - car GPS tracking close to the crime scene equals (more nefarious) as apposed to being far away would equal less nefarious.
 When you have delegated a small task to one model and you have 50 models pointing a group of people that group of people will have a higher probability of being involved.
 
+List all the places that you or the missing individual have worked and get the archived text to feed to an LLM. Then through prompt enginearing create specific questions geared to uncovering people with motive.
+
+Build the same for all the bible study classes if there are recordings.
+
+Build one for social media posts from each social media platform.
+
+Somewhere out there there may be a person or group of people having a digital conversation about what they should be doing. What platforms might they use? Discord, Google Meet, Microsoft Teams, Messaging services, etc... Create RAG LLMs that can pull text that reference the missing persons name in it.. How can it be intercepted? Can you petition to look through records in the companies database for references that might suggest nefarious behavior?
+
