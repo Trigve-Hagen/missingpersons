@@ -1,9 +1,10 @@
-# pip install flask Flask-SQLAlchemy usps-api
+# pip install flask Flask-SQLAlchemy sqlalchemy-utils
 import os
 import flask
 from config import Config
 from flask import Flask, request, session, jsonify, current_app
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
+from sqlalchemy_utils import database_exists
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
 from database.base import Base
@@ -43,10 +44,14 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def initialize_database(session):
-  Base.metadata.create_all(bind=engine)
+  inspector = inspect(engine)
+  if inspector.has_table("people"):
+    Base.metadata.create_all(bind=engine)
 
 if __name__ == '__main__':
   initialize_database(session)
+  app.run(debug=True)
 
 # python -m venv .venv
 # .\.venv\Scripts\Activate.ps1
+# python app.py
