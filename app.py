@@ -8,7 +8,7 @@ from sqlalchemy_utils import database_exists
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
 from database.base import Base
-from database.event import Event
+from database.event import Event, Url, Question
 from database.news import News
 from database.person import Person, Name, Email, Phone, Address
 
@@ -17,7 +17,7 @@ mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
 script_dir = Path(__file__).parent
-DATABASE = script_dir / "database" / "hope.db"
+DATABASE = script_dir / "database" / "db" / "hope.db"
 
 app=Flask(__name__)
 app.config.from_object(Config)
@@ -43,13 +43,12 @@ engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def initialize_database(session):
-  inspector = inspect(engine)
-  if inspector.has_table("people"):
+def initialize_database(engine):
+  if not database_exists(engine.url):
     Base.metadata.create_all(bind=engine)
 
 if __name__ == '__main__':
-  initialize_database(session)
+  initialize_database(engine)
   app.run(debug=True)
 
 # python -m venv .venv

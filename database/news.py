@@ -6,19 +6,19 @@ from database.base import Base # Import shared base
 class News(Base):
   __tablename__ = "news"
 
-  nid = Column("nid", Integer, primary_key=True)
+  id = Column("id", Integer, primary_key=True)
   station = Column("station", String)
   news = Column("news", String)
   owner = Column(Integer, ForeignKey("people.pid"))
 
-  def __init__(self, nid, station, news, owner):
-    self.eid = nid
+  def __init__(self, id, station, news, owner):
+    self.eid = id
     self.station = station
     self.news = news
     self.owner = owner
 
   def __repr__(self):
-    return f"({self.nid}) {self.station} {self.news} owned by {self.owner}"
+    return f"({self.id}) {self.station} {self.news} owned by {self.owner}"
 
   def validate():
     pass
