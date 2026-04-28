@@ -90,3 +90,12 @@ Think its better to use a single model that uses each of the line items as a fea
  Need a warrent to see peoples financial statements and gps of their whereabouts and you need probable cause to get the search warrent.
 
  What other things can AI do before that happens?
+
+Web scraping
+Web Scraper Idea:
+ - Create a RAG LLM like this - [Build a RAG web scraper using Langchain, Ollama, ChromaDB](https://www.youtube.com/watch?v=0zgYu_9WF7A)
+ - Create a database to store sites to scrape so a user can add them.
+ - Ask all that can to take a list of sites to scape and coordinate between the searchers.
+ - Put the scrapper on a cron so it scrapes for any talk about the missing person every day.
+ - Ask people to help that own big sites so it can be done legally.
+ - Prompt the LLM everyday with questons that are engineered to find the most relevant conversations.
