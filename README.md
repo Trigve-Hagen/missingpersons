@@ -5,9 +5,10 @@ Create AI models for predicting behavior and define code that do tasks related t
 Need READ ONLY APIs that supply data for missing people and emergency alerts.
 Need the best up to date APIs.
 
-### Update 04-25-2026
+### Links
 
 Reading [Invisible Threads](https://blog.ry4n.org/invisible-threads-finding-missing-people-online-7dec4cb038e5).
+
 ### News Stations
 
 - NBC News
@@ -61,7 +62,7 @@ Time of disappearance - get what people of interest are reported doing.
   - Looking for people with records.
   - People with motives.
 
-### Update 04-26-2026
+### Ideas
 
 Working on the database implementation.
  - Every time interval search for new data. Daily?
@@ -80,7 +81,7 @@ Somewhere out there there may be a person or group of people having a digital co
 
 There may be somebody trying to apply for life insurance, credit cards, and/or loans on them. Keep an eye on that.
 
-### Update 04-28-2026
+### Plan
 
 Think its better to use a single model that uses each of the line items as a feature.
   - buying products that could be used in a crime. Duck tape, rope, weapons, ski mask, gloves, etc..
@@ -94,7 +95,7 @@ Need a warrent to see peoples financial statements and gps of their whereabouts 
 
 What other things can AI do before that happens?
 
-Thought for a moment Web Scraping Web was illegal. But if done ethically and takes into consideration the robot.txt. So onward!
+Thought for a moment Web Scraping Web was illegal. But if done ethically and takes into consideration the robot.txt. onward!
 
 Web Scraper Idea:
  - Create a RAG LLM like this - [Build a RAG web scraper using Langchain, Ollama, ChromaDB](https://www.youtube.com/watch?v=0zgYu_9WF7A)
@@ -104,6 +105,7 @@ Web Scraper Idea:
  - Put the scrapper on a cron so it scrapes for any talk about the missing person every day.
  - You should ask people to help that own big sites like messenger or private messenging apps to keep an eye out for people talking about the missing person.
  - Have state hold a person and searching to work on the person held in state. Have searches for public records and other publicly accessable accounts.
+ - Then Train the model on all the people involved so you can prompt the LLM to look for connections.
  - You define questions and Prompt the LLM everyday if you like with questons that are engineered to find the most relevant conversations.
  - Create an application style tool where none coders can use beatiful soup and model traning to scrape the internet for information.
  - Use pyinstaller once finished to create a executable so none programmers can install and use.
