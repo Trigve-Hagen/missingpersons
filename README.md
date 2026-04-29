@@ -4,6 +4,8 @@ I'm creating a installable application that is a tool to investigate a persons d
 
 Retrieval-Augmented Generation (RAG) is an AI framework that improves the accuracy and relevance of large language model (LLM) outputs by referencing an authoritative, external knowledge base outside of its static training data.
 
+Ollama lets you build and work on an LLM model locally on your computer so you maintain your privacy.
+
 I will keep updating this file as I come up with new ideas.
 
 ### Donate
