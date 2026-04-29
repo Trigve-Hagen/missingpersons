@@ -48,7 +48,9 @@ Build out these timelines and then recursively build timelines for each person o
 
 ### Image Recognition
 
-Look through images for people you do not know that show up multiple times.
+- Look through images for people you do not know that show up multiple times.
+- Make a list of the people and the number of times they are seen in all images
+- Look for them on the public images in google to try to name them.
 
 ### Missing Persons Favorite Things
   - Favorite Websites?
