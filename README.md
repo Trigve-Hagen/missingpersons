@@ -20,6 +20,10 @@ I'm unemployed at the moment and looking for work. Help keep me going. Any suppo
 
 My site: [Globalwebmethods](https://globalwebmethods.com/)
 
+## Helping me build
+
+If you are interested in contributing please do! You are welcome to build in features to help get this done.
+
 ### Links
 
 Reading [Invisible Threads](https://blog.ry4n.org/invisible-threads-finding-missing-people-online-7dec4cb038e5).
