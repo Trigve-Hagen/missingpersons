@@ -11,7 +11,10 @@
           <a class="nav-link{% if request.endpoint == 'index' %} active{% endif %}" href="{{ url_for('index') }}">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link{% if request.endpoint == 'data' %} active{% endif %}" href="{{ url_for('data') }}">Data</a>
+          <a class="nav-link{% if request.endpoint == 'category' %} active{% endif %}" href="{{ url_for('category') }}">Category</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if request.endpoint == 'person' %} active{% endif %}" href="{{ url_for('person') }}">Person</a>
         </li>
       </ul>
     </div>

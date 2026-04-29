@@ -1,0 +1,63 @@
+<!-- templates/search.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+
+<h1 class="my-4">Categories</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Category Type</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+          <tr>
+              <td scope="row">{{ category.id }}</td>
+              <td>{{ category.name }}</td>
+              <td>{{ category.type }}</td>
+              <td><a class="btn btn-secondary" href="/edit/{{category.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{category.id}}" type="button">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h3 class="my-4">Category</h3>
+
+<form class="row g-4" action="/set_category" method="POST" name="category">
+  <div class="col-md-6">
+    <label for="type" class="form-label">Type</label>
+    <select class="form-select" id="type" name="type" required>
+      <option selected disabled value="">Choose...</option>
+      <option value="contactType">Contact Type</option>
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label for="name" class="form-label">Name</label>
+    <input type="text" class="form-control" id="name" name="name" required>
+  </div>
+  <div class="col-12 mb-5">
+    <button class="btn btn-primary" type="submit">Submit form</button>
+  </div>
+</form>
+{% endblock %}

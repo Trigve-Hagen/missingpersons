@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from pathlib import Path
 from database.base import Base
+from database.category import Category
 from database.event import Event, Url, Question
 from database.news import News
 from database.person import Person, Alias, Email, Phone, Address
@@ -41,8 +42,35 @@ def add_nosniff_header_to_static(response):
 def index():
   return flask.render_template('index.html')
 
-@app.route('/data')
-def data():
+@app.route('/category')
+def category():
+  all_categories = session.query(Category).all()
+  return flask.render_template('category.html', categories=all_categories)
+
+@app.route('/set_category', methods=['POST'])
+def set_category():
+  form_data = request.form
+  try:
+    new_entry = Category(
+      type=form_data.get('type'),
+      name=form_data.get('name')
+    )
+    session.add(new_entry)
+    session.commit()
+    flash("Category added successfully!", "success")
+    return redirect(url_for('category'))
+  except IntegrityError as e:
+    session.rollback()  # Always rollback on error to reset the session
+    error_msg = str(e.orig) # Gets the specific database error message
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('category'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('category'))
+
+@app.route('/person')
+def person():
   missing_exists = session.query(
     session.query(Person).filter_by(ifMissing=True).exists()
   ).scalar()
@@ -71,12 +99,11 @@ def data():
   eye_colors = ["Brown", "Blue", "Hazel", "Green", "Grey", "Amber", "Other"]
 
   all_people = session.query(Person).all()
-  print(all_people)
   all_aliases = session.query(Alias).all()
   all_addresses = session.query(Address).all()
   all_emails = session.query(Email).all()
   all_phones = session.query(Phone).all()
-  return flask.render_template('data.html', missing_exists=missing_exists, height_options=height_options, weight_options=range(10, 401), hair_color_codes=hair_color_codes, eye_colors=eye_colors, people=all_people, aliases=all_aliases, addresses=all_addresses, emails=all_emails, phones=all_phones)
+  return flask.render_template('person.html', missing_exists=missing_exists, height_options=height_options, weight_options=range(10, 401), hair_color_codes=hair_color_codes, eye_colors=eye_colors, people=all_people, aliases=all_aliases, addresses=all_addresses, emails=all_emails, phones=all_phones)
 
 @app.route('/set_person', methods=['POST'])
 def set_person():
@@ -100,17 +127,17 @@ def set_person():
     )
     session.add(new_entry)
     session.commit()
-    flash("Data added successfully!", "success")
-    return redirect(url_for('data'))
+    flash("Person added successfully!", "success")
+    return redirect(url_for('person'))
   except IntegrityError as e:
     session.rollback()  # Always rollback on error to reset the session
     error_msg = str(e.orig) # Gets the specific database error message
     flash(f"Database Error: {error_msg}", "danger")
-    return redirect(url_for('data'))
+    return redirect(url_for('person'))
   except Exception as e:
     session.rollback()
     flash(f"An unexpected error occurred: {str(e)}", "danger")
-    return redirect(url_for('data'))
+    return redirect(url_for('person'))
 
 
 engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
@@ -120,6 +147,15 @@ session = Session()
 def initialize_database(engine):
   if not database_exists(engine.url):
     Base.metadata.create_all(bind=engine)
+
+  if session.query(Category).first() is None:
+    c1 = Category("contactType", "Missing Person")
+    # c2 = Category("contactType", "Missing Person")
+    # c3 = Category("contactType", "Missing Person")
+    session.add(c1)
+    # session.add(c2)
+    # session.add(c3)
+    session.commit()
 
 if __name__ == '__main__':
   initialize_database(engine)
