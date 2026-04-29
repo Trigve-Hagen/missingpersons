@@ -2,6 +2,8 @@
 
 I'm creating a installable application that is a tool to investigate a persons disappearance. It will initially use an [Ollama](https://ollama.com/download/windows) RAG LLM and train it on any data that can be found on the people in the immediate family, friends, and acquaintances including the missing person. It will then look for connections to the person gone missing. Anyone will be able to download this and the idea is that you can get as many people as you can searching for the missing person. It will download and install both ollama and a model to use as the RAG LLM upon installation. The software is a website that runs in a browser so its immediately connected to use the internet for acquiring data. It will give you the ability to ethically scrape websites and add it to the LLM. It allows the user to create lists of people and aquire as much data as posible about them to cross reference and ask questions about using AI.
 
+The next item I would like to build is a model that can pull faces out of images, identify them and count the number of times they show up in all the images fed to the model.
+
 Retrieval-Augmented Generation (RAG) is an AI framework that improves the accuracy and relevance of large language model (LLM) outputs by referencing an authoritative, external knowledge base outside of its static training data.
 
 Ollama lets you build and work on an LLM model locally on your computer so you maintain your privacy.
@@ -12,7 +14,7 @@ I will keep updating this file as I come up with new ideas.
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=J8WY5PDLWGK6Y)
 
-I'm unemployed at the moment and looking for work. Help keep me going. Any support is appreciated. If you would be interested in helping or have ideas I'm open to help there also. If you are hiring I'm open to full time employment as a Full Stack Developer. Thanks.
+I'm unemployed at the moment and looking for work. Help keep me going. Any support is appreciated. If you would be interested in helping or have ideas I'm open to help there also. If you are hiring I'm open to full time employment as a Full Stack Developer that can also code AI in both Python and C. Thanks.
 
 My site: [Globalwebmethods](https://globalwebmethods.com/)
 
