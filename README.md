@@ -46,6 +46,10 @@ Build out these timelines and then recursively build timelines for each person o
   - Who they called.
   - GPS of their phones.
 
+### Image Recognition
+
+Look through images for people you do not know that show up multiple times.
+
 ### Missing Persons Favorite Things
   - Favorite Websites?
   - What where their interests?
