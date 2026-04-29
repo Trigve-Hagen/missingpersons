@@ -150,7 +150,7 @@
   </div>
   <div class="col-md-3">
     <label for="dob" class="form-label">DOB</label>
-    <input type="date" class="form-control" id="dob" name="dob">
+    <input type="date" class="form-control" id="dob" name="dob" required>
   </div>
   <div class="col-12 mb-5">
     <button class="btn btn-primary" type="submit">Submit form</button>
@@ -166,6 +166,7 @@
         <tr>
           <th scope="col">#</th>
           <th scope="col">Name</th>
+          <th scope="col">Person</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -174,6 +175,11 @@
           <tr>
               <td scope="row">{{ alias.id }}</td>
               <td>{{ alias.sirName }} {{ alias.firstName }} {{ alias.middleName }} {{ alias.lastName }} {{ alias.suffix }}</td>
+              {% for person in owners %}
+                {% if person.id == alias.owner %}
+                  <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
+                {% endif %}
+              {% endfor %}
               <td><a class="btn btn-secondary" href="/edit/{{alias.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{alias.id}}" type="button">Delete</a></td>
           </tr>
         {% endfor %}
@@ -215,7 +221,7 @@
   </div>
   <div class="col-md-3">
     <label for="alias-owner" class="form-label">Person</label>
-    <select class="form-select" id="alias-owner" name="owner">
+    <select class="form-select" id="alias-owner" name="owner" required>
       <option selected disabled value="">Choose...</option>
       {% for person in owners %}
         <option value="{{ person.id }}">{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
@@ -229,29 +235,91 @@
 
 <h3 class="my-4">Addresses</h3>
 
-<form class="row g-3">
-  <div class="col-md-6">
-    <label for="validationDefault01" class="form-label">Address 1</label>
-    <input type="text" class="form-control" id="validationDefault01" value="Mark" required>
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Address</th>
+          <th scope="col">Person</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for address in addresses %}
+          <tr>
+              <td scope="row">{{ address.id }}</td>
+              <td>{{ address.name }}</td>
+              <td>{{ address.address1 }} {{ address.city }}</td>
+              {% for person in owners %}
+                {% if person.id == address.owner %}
+                  <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
+                {% endif %}
+              {% endfor %}
+              <td><a class="btn btn-secondary" href="/edit/{{address.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{address.id}}" type="button">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+</div>
+
+<form class="row g-4" action="/set_address" method="POST" name="address">
   <div class="col-md-6">
-    <label for="validationDefault02" class="form-label">Address 2</label>
-    <input type="text" class="form-control" id="validationDefault02" value="Otto" required>
-  </div>
-  <div class="col-md-6">
-    <label for="validationDefault03" class="form-label">City</label>
-    <input type="text" class="form-control" id="validationDefault03" required>
-  </div>
-  <div class="col-md-3">
-    <label for="validationDefault04" class="form-label">State</label>
-    <select class="form-select" id="validationDefault04" required>
+    <label for="address-type" class="form-label">Type</label>
+    <select class="form-select" id="address-type" name="type" required>
       <option selected disabled value="">Choose...</option>
-      <option>...</option>
+      {% for type in addressTypes %}
+        <option value="{{ type.name }}">{{ type.name }}</option>
+      {% endfor %}
     </select>
   </div>
+  <div class="col-md-6">
+    <label for="address-name" class="form-label">Name</label>
+    <input type="text" class="form-control" id="address-name" name="name" required>
+  </div>
+  <div class="col-md-6">
+    <label for="address-address1" class="form-label">Address 1</label>
+    <input type="text" class="form-control" id="address-address1" name="address1" required>
+  </div>
+  <div class="col-md-6">
+    <label for="address-address2" class="form-label">Address 2</label>
+    <input type="text" class="form-control" id="address-address2" name="address2">
+  </div>
   <div class="col-md-3">
-    <label for="validationDefault05" class="form-label">Zip</label>
-    <input type="text" class="form-control" id="validationDefault05" required>
+    <label for="address-city" class="form-label">City</label>
+    <input type="text" class="form-control" id="address-city" name="city" required>
+  </div>
+  <div class="col-md-3">
+    <label for="address-state" class="form-label">State</label>
+    <input type="text" class="form-control" id="address-state" name="state" required>
+  </div>
+  <div class="col-md-3">
+    <label for="address-zip5" class="form-label">Zip 5</label>
+    <input type="text" class="form-control" id="address-zip5" name="zip5" required>
+  </div>
+  <div class="col-md-3">
+    <label for="address-zip4" class="form-label">Zip 4</label>
+    <input type="text" class="form-control" id="address-zip4" name="zip4">
+  </div>
+  <div class="col-md-4">
+    <label for="address-ifCrimeScene" class="form-label">If Crime Scene</label>
+    <select class="form-select" id="address-ifCrimeScene" name="ifCrimeScene" required>
+      <option selected disabled value="">Choose...</option>
+      <option value="True">True</option>
+      <option value="False">False</option>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label for="address-owner" class="form-label">Person</label>
+    <select class="form-select" id="address-owner" name="owner" required>
+      <option selected disabled value="">Choose...</option>
+      {% for person in owners %}
+        <option value="{{ person.id }}">{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div class="col-12 mb-5">
     <button class="btn btn-primary" type="submit">Submit form</button>
@@ -260,18 +328,57 @@
 
 <h3 class="my-4">Emails</h3>
 
-<form class="row g-4">
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Email</th>
+          <th scope="col">Person</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for email in emails %}
+          <tr>
+              <td scope="row">{{ email.id }}</td>
+              <td>{{ email.email }}</td>
+              {% for person in owners %}
+                {% if person.id == email.owner %}
+                  <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
+                {% endif %}
+              {% endfor %}
+              <td><a class="btn btn-secondary" href="/edit/{{email.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{email.id}}" type="button">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form class="row g-4" action="/set_email" method="POST" name="email">
   <div class="col-md-6">
-    <label for="validationDefault04" class="form-label">Type</label>
-    <select class="form-select" id="validationDefault04" required>
+    <label for="email-type" class="form-label">Type</label>
+    <select class="form-select" id="email-type" name="type" required>
       <option selected disabled value="">Choose...</option>
-      <option>Personel</option>
-      <option>Work</option>
+      {% for type in emailTypes %}
+        <option value="{{ type.name }}">{{ type.name }}</option>
+      {% endfor %}
     </select>
   </div>
   <div class="col-md-6">
-    <label for="validationDefault01" class="form-label">Email</label>
-    <input type="email" class="form-control" id="validationDefault01" required>
+    <label for="email-email" class="form-label">Email</label>
+    <input type="email" class="form-control" id="email-email" name="email" required>
+  </div>
+  <div class="col-md-4">
+    <label for="email-owner" class="form-label">Person</label>
+    <select class="form-select" id="email-owner" name="owner" required>
+      <option selected disabled value="">Choose...</option>
+      {% for person in owners %}
+        <option value="{{ person.id }}">{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div class="col-12 mb-5">
     <button class="btn btn-primary" type="submit">Submit form</button>
@@ -280,19 +387,57 @@
 
 <h3 class="my-4">Phone Numbers</h3>
 
-<form class="row g-4">
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Email</th>
+          <th scope="col">Person</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for phone in phones %}
+          <tr>
+              <td scope="row">{{ phone.id }}</td>
+              <td>{{ phone.phone }}</td>
+              {% for person in owners %}
+                {% if person.id == phone.owner %}
+                  <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
+                {% endif %}
+              {% endfor %}
+              <td><a class="btn btn-secondary" href="/edit/{{phone.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{phone.id}}" type="button">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form class="row g-4" action="/set_phone" method="POST" name="phone">
   <div class="col-md-6">
-    <label for="validationDefault04" class="form-label">Type</label>
-    <select class="form-select" id="validationDefault04" required>
+    <label for="phone-type" class="form-label">Type</label>
+    <select class="form-select" id="phone-type" name="type" required>
       <option selected disabled value="">Choose...</option>
-      <option>Home</option>
-      <option>Cell</option>
-      <option>Work</option>
+      {% for type in phoneTypes %}
+        <option value="{{ type.name }}">{{ type.name }}</option>
+      {% endfor %}
     </select>
   </div>
   <div class="col-md-6">
-    <label for="validationDefault01" class="form-label">Phone</label>
-    <input type="tel" class="form-control" id="validationDefault01" required>
+    <label for="phone-phone" class="form-label">Phone</label>
+    <input type="tel" class="form-control" id="phone-phone" name="phone" required>
+  </div>
+  <div class="col-md-4">
+    <label for="phone-owner" class="form-label">Person</label>
+    <select class="form-select" id="phone-owner" name="owner" required>
+      <option selected disabled value="">Choose...</option>
+      {% for person in owners %}
+        <option value="{{ person.id }}">{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div class="col-12 mb-5">
     <button class="btn btn-primary" type="submit">Submit form</button>

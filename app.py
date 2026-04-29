@@ -78,6 +78,15 @@ def person():
   stmt = select(Category).where(Category.type == "contactType")
   contactType_select = session.execute(stmt).scalars().all()
 
+  stmt = select(Category).where(Category.type == "addressType")
+  addressType_select = session.execute(stmt).scalars().all()
+
+  stmt = select(Category).where(Category.type == "emailType")
+  emailType_select = session.execute(stmt).scalars().all()
+
+  stmt = select(Category).where(Category.type == "phoneType")
+  phoneType_select = session.execute(stmt).scalars().all()
+
   stmt = select(Person).where(Person.contactType == "Missing Person")
   owner_select = session.execute(stmt).scalars().all()
 
@@ -111,7 +120,7 @@ def person():
   all_addresses = session.query(Address).all()
   all_emails = session.query(Email).all()
   all_phones = session.query(Phone).all()
-  return flask.render_template('person.html', missing_exists=missing_exists, height_options=height_options, weight_options=range(10, 401), hair_color_codes=hair_color_codes, eye_colors=eye_colors, suffixes=name_suffixes, people=all_people, aliases=all_aliases, addresses=all_addresses, emails=all_emails, phones=all_phones, contactTypes=contactType_select, owners=owner_select)
+  return flask.render_template('person.html', missing_exists=missing_exists, height_options=height_options, weight_options=range(10, 401), hair_color_codes=hair_color_codes, eye_colors=eye_colors, suffixes=name_suffixes, people=all_people, aliases=all_aliases, addresses=all_addresses, emails=all_emails, phones=all_phones, contactTypes=contactType_select, addressTypes=addressType_select, emailTypes=emailType_select, phoneTypes=phoneType_select, owners=owner_select)
 
 @app.route('/set_person', methods=['POST'])
 def set_person():
@@ -174,6 +183,82 @@ def set_alias():
     flash(f"An unexpected error occurred: {str(e)}", "danger")
     return redirect(url_for('person'))
 
+@app.route('/set_address', methods=['POST'])
+def set_address():
+  form_data = request.form
+  try:
+    new_entry = Address(
+      ifCrimeScene=form_data.get('ifCrimeScene') == "True",
+      type=form_data.get('type'),
+      name=form_data.get('name'),
+      address1=form_data.get('address1'),
+      address2=form_data.get('address2'),
+      city=form_data.get('city'),
+      state=form_data.get('state'),
+      zip5=form_data.get('zip5'),
+      zip4=form_data.get('zip4'),
+      owner=form_data.get('owner'),
+    )
+    session.add(new_entry)
+    session.commit()
+    flash("Address added successfully!", "success")
+    return redirect(url_for('person'))
+  except IntegrityError as e:
+    session.rollback()  # Always rollback on error to reset the session
+    error_msg = str(e.orig) # Gets the specific database error message
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('person'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('person'))
+
+@app.route('/set_email', methods=['POST'])
+def set_email():
+  form_data = request.form
+  try:
+    new_entry = Email(
+      type=form_data.get('type'),
+      email=form_data.get('email'),
+      owner=form_data.get('owner'),
+    )
+    session.add(new_entry)
+    session.commit()
+    flash("Email added successfully!", "success")
+    return redirect(url_for('person'))
+  except IntegrityError as e:
+    session.rollback()  # Always rollback on error to reset the session
+    error_msg = str(e.orig) # Gets the specific database error message
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('person'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('person'))
+
+@app.route('/set_phone', methods=['POST'])
+def set_phone():
+  form_data = request.form
+  try:
+    new_entry = Phone(
+      type=form_data.get('type'),
+      phone=form_data.get('phone'),
+      owner=form_data.get('owner'),
+    )
+    session.add(new_entry)
+    session.commit()
+    flash("Phone added successfully!", "success")
+    return redirect(url_for('person'))
+  except IntegrityError as e:
+    session.rollback()  # Always rollback on error to reset the session
+    error_msg = str(e.orig) # Gets the specific database error message
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('person'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('person'))
+
 
 engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
 Session = sessionmaker(bind=engine)
@@ -185,11 +270,13 @@ def initialize_database(engine):
 
   if session.query(Category).first() is None:
     c1 = Category("contactType", "Missing Person")
-    # c2 = Category("contactType", "Missing Person")
-    # c3 = Category("contactType", "Missing Person")
+    c2 = Category("addressType", "Home")
+    c3 = Category("emailType", "Personal")
+    c4 = Category("phoneType", "Home")
     session.add(c1)
-    # session.add(c2)
-    # session.add(c3)
+    session.add(c2)
+    session.add(c3)
+    session.add(c4)
     session.commit()
 
 if __name__ == '__main__':

@@ -72,18 +72,17 @@ class Address(Base):
 
   id = Column("id", Integer, primary_key=True)
   ifCrimeScene = Column("ifCrimeScene", Boolean, default=False, nullable=False)
-  type = Column(String(20)) # home, work
-  name = Column("name", String) # name of business if work address
-  address1 = Column("address1", String)
-  address2 = Column("address2", String)
-  city = Column("city", String)
-  state = Column("state", String)
+  type = Column(NullToEmptyString(20)) # home, work
+  name = Column(NullToEmptyString) # name of business if work address
+  address1 = Column(NullToEmptyString)
+  address2 = Column(NullToEmptyString)
+  city = Column(NullToEmptyString)
+  state = Column(NullToEmptyString)
   zip5 = Column("zip5", Integer)
   zip4 = Column("zip4", Integer)
   owner = Column(Integer, ForeignKey("people.id"))
 
-  def __init__(self, id, ifCrimeScene, type, name, address1, address2, city, state, zip5, zip4, owner):
-    self.id = id
+  def __init__(self, ifCrimeScene, type, name, address1, address2, city, state, zip5, zip4, owner):
     self.ifCrimeScene = ifCrimeScene
     self.type = type
     self.name = name
@@ -105,12 +104,11 @@ class Email(Base):
   __tablename__ = "emails"
 
   id = Column("id", Integer, primary_key=True)
-  type = Column(String(20)) # personel, work
-  email = Column(String(255), unique=True, nullable=False)
+  type = Column(NullToEmptyString(20)) # personel, work
+  email = Column(NullToEmptyString(255), unique=True, nullable=False)
   owner = Column(Integer, ForeignKey("people.id"))
 
-  def __init__(self, id, type, email, owner):
-    self.id = id
+  def __init__(self, type, email, owner):
     self.type = type
     self.email = email
     self.owner = owner
@@ -125,12 +123,11 @@ class Phone(Base):
   __tablename__ = "phones"
 
   id = Column("id", Integer, primary_key=True)
-  type = Column(String(20)) # cell, home, work
-  phone = Column(String(20), unique=True, nullable=False)
+  type = Column(NullToEmptyString(20)) # cell, home, work
+  phone = Column(NullToEmptyString(20), unique=True, nullable=False)
   owner = Column(Integer, ForeignKey("people.id"))
 
-  def __init__(self, id, type, phone, owner):
-    self.id = id
+  def __init__(self, type, phone, owner):
     self.type = type
     self.phone = phone
     self.owner = owner
@@ -140,11 +137,3 @@ class Phone(Base):
 
   def validate():
     pass
-
-class PersonRepository:
-  def __int__(self, person: Person, alias: Alias, email: Email, phone: Phone, address: Address):
-    self.person = person
-    self.alias = alias
-    self.email = email
-    self.phone = phone
-    self.address = address

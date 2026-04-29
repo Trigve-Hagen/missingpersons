@@ -7,7 +7,7 @@ class Category(Base):
 
   id = Column("id", Integer, primary_key=True)
   type = Column(NullToEmptyString(20)) # contactType
-  name = Column(NullToEmptyString(255), unique=True, nullable=False)
+  name = Column(NullToEmptyString(255))
 
   def __init__(self, type, name):
     self.type = type
