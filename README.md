@@ -99,9 +99,11 @@ Thought for a moment Web Scraping Web was illegal. But if done ethically and tak
 Web Scraper Idea:
  - Create a RAG LLM like this - [Build a RAG web scraper using Langchain, Ollama, ChromaDB](https://www.youtube.com/watch?v=0zgYu_9WF7A)
  - Create a database to store sites to scrape so a user can add them.
- - Ask all that can to take a list of sites to scape and coordinate between the searchers.
+ - Ask all your family, friends, relatives that can to create a list of sites to scape and coordinate between the searchers.
+ - I'll work on some kind of a way to consolidation everyones searchs or you can just stay in touch with your team and review each others results.
  - Put the scrapper on a cron so it scrapes for any talk about the missing person every day.
- - Ask people to help that own big sites so it can be done legally.
+ - You should ask people to help that own big sites like messenger or private messenging apps to keep an eye out for people talking about the missing person.
+ - Have state hold a person and searching to work on the person held in state. Have searches for public records and other publicly accessable accounts.
  - You define questions and Prompt the LLM everyday if you like with questons that are engineered to find the most relevant conversations.
  - Create an application style tool where none coders can use beatiful soup and model traning to scrape the internet for information.
  - Use pyinstaller once finished to create a executable so none programmers can install and use.
