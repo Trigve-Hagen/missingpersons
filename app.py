@@ -259,6 +259,49 @@ def set_phone():
     flash(f"An unexpected error occurred: {str(e)}", "danger")
     return redirect(url_for('person'))
 
+@app.route('/delete_item', methods=['POST'])
+def delete_item():
+  form_data = request.form
+  id = form_data.get('id')
+  table_type = form_data.get('type')
+  models = {'person': Person, 'alias': Alias, 'address': Address, 'email': Email, 'phone': Phone}
+  model = models.get(table_type)
+
+  # Specific check for Person child records
+  alias_count = session.query(Alias).filter_by(id=id).count()
+  address_count = session.query(Address).filter_by(id=id).count()
+  email_count = session.query(Email).filter_by(id=id).count()
+  phone_count = session.query(Phone).filter_by(id=id).count()
+  if table_type == 'person':
+    if alias_count > 0:
+      flash(f"Cannot delete: {table_type} has {alias_count} associated aliases. Delete them first.", "danger")
+      return redirect(url_for('person'))
+    if address_count > 0:
+      flash(f"Cannot delete: {table_type} has {address_count} associated addresses. Delete them first.", "danger")
+      return redirect(url_for('person'))
+    if email_count > 0:
+      flash(f"Cannot delete: {table_type} has {email_count} associated emails. Delete them first.", "danger")
+      return redirect(url_for('person'))
+    if phone_count > 0:
+      flash(f"Cannot delete: {table_type} has {phone_count} associated phone numbers. Delete them first.", "danger")
+      return redirect(url_for('person'))
+
+  try:
+    item = session.get(model, id)
+    session.delete(item)
+    session.commit()
+    flash(table_type + " deleted successfully!", "success")
+    return redirect(url_for('person'))
+  except IntegrityError as e:
+    session.rollback()  # Always rollback on error to reset the session
+    error_msg = str(e.orig) # Gets the specific database error message
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('person'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('person'))
+
 
 engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
 Session = sessionmaker(bind=engine)

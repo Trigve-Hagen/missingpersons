@@ -34,7 +34,7 @@
               <td scope="row">{{ person.id }}</td>
               <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
               <td>{{ person.contactType }}</td>
-              <td><a class="btn btn-secondary" href="/edit/{{person.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{person.id}}" type="button">Delete</a></td>
+              <td><a class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editPersonModal" data-bs-whatever="@mdo">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="person" data-bs-item-id="{{ person.id }}" data-bs-item="{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -180,7 +180,7 @@
                   <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
                 {% endif %}
               {% endfor %}
-              <td><a class="btn btn-secondary" href="/edit/{{alias.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{alias.id}}" type="button">Delete</a></td>
+              <td><a class="btn btn-secondary" href="/edit/{{alias.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="alias" data-bs-item-id="{{ alias.id }}" data-bs-item="{{ alias.sirName }} {{ alias.firstName }} {{ alias.middleName }} {{ alias.lastName }} {{ alias.suffix }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -258,7 +258,7 @@
                   <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
                 {% endif %}
               {% endfor %}
-              <td><a class="btn btn-secondary" href="/edit/{{address.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{address.id}}" type="button">Delete</a></td>
+              <td><a class="btn btn-secondary" href="/edit/{{address.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="address" data-bs-item-id="{{ address.id }}" data-bs-item="{{ address.name }}: {{ address.address1 }} {{ address.city }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -349,7 +349,7 @@
                   <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
                 {% endif %}
               {% endfor %}
-              <td><a class="btn btn-secondary" href="/edit/{{email.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{email.id}}" type="button">Delete</a></td>
+              <td><a class="btn btn-secondary" href="/edit/{{email.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="email" data-bs-item-id="{{ email.id }}" data-bs-item="{{ email.email }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -408,7 +408,7 @@
                   <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
                 {% endif %}
               {% endfor %}
-              <td><a class="btn btn-secondary" href="/edit/{{phone.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" href="/delete/{{phone.id}}" type="button">Delete</a></td>
+              <td><a class="btn btn-secondary" href="/edit/{{phone.id}}" type="button">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="phone" data-bs-item-id="{{ phone.id }}" data-bs-item="{{ phone.phone }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>
@@ -443,4 +443,59 @@
     <button class="btn btn-primary" type="submit">Submit form</button>
   </div>
 </form>
+
+<div class="modal modal-lg fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteModalLabel">Delete</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="row g-4" action="/delete_item" method="POST" name="delete">
+          <input type="hidden" class="form-control" id="delete-id" name="id" />
+          <input type="hidden" class="form-control" id="delete-type" name="type" />
+          <div class="mb-3">
+            <p id="delete-item-id"></p>
+            <p id="delete-item-type"></p>
+            <p id="delete-item"></p>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editPersonModal" tabindex="-1" aria-labelledby="editPersonModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editPersonModalLabel">Edit</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Recipient:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+          <div class="mb-3">
+            <label for="message-text" class="col-form-label">Message:</label>
+            <textarea class="form-control" id="message-text"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Send message</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
