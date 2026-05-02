@@ -1,4 +1,5 @@
-# pip install flask Flask-SQLAlchemy sqlalchemy-utils
+# pip install flask Flask-SQLAlchemy sqlalchemy-utils pythonnet pywin32 comtypes
+# open Developer Visual Studio prompt activate .venv and pip install pythonnet pywin32 comtypes webview
 import os
 import flask
 from config import Config
