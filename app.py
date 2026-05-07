@@ -816,7 +816,7 @@ def initialize_database(engine):
 if __name__ == '__main__':
   initialize_database(engine)
   webview.create_window('Missing Persons', app, min_size=(1180, 600), resizable=True, fullscreen=False, text_select=True)
-  webview.start(debug=True)
+  webview.start(debug=False)
 
 # python -m venv .venv
 # .\.venv\Scripts\Activate.ps1

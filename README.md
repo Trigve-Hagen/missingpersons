@@ -37,7 +37,7 @@ Build out the database for Person and Categories.
 
 ### Stage 2
 Build out the database and pages for consuming APIs. Users use a form to run the API to get data from whatever API they choose to use.
-- Api, ApiFields and State. I have just finished the basics and added Nancy Guthrie as aan example of how to use it. There is still alot of work to do on this part of the system. Im going to move on though and complete the minimum of each Stage so I can have a fully working app before I go back and fully complete everything. This allows U.S to help if you want by taking on a section of it. Thanks.
+- Api, ApiFields and State. I have just finished the basics and added Nancy Guthrie as an example of how to use it. There is still alot of work to do on this part of the system. Im going to move on though and complete the minimum of each Stage so I can have a fully working app before I go back and fully complete everything. This allows U.S to help if you want by taking on a section of it. Thanks.
   - Api - Fill in the information about the api here. Put the full url into the url field including the https:// and the url endpoint.
   - ApiFields - Fill in each field that will be used in the api call. Field is a query parameter and is used to filter results. The field is the query parameter name, value is the value that needs to be there. Everything associated with a person will eventually be an option in the value list. Right now there is only the persons name.
   - State - The appication state is saved to help guild your workflow. The state form in the upper right corner and holds the person and the api that you are working on. When you create ApiFields or call Apis you need to have the Person and the Api selected and saved in state.
