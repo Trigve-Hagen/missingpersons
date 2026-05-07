@@ -12,7 +12,7 @@ def object_as_dict(obj):
 class PeopleUtils:
   def __init__(self, session):
     self.session = session
-    self.state = self.session.execute(select(State).filter_by(id =1)).scalar_one_or_none()
+    self.state = self.session.execute(select(State).filter_by(id = 1)).scalar_one_or_none()
 
   def get_height_options(self):
     height_options = []
@@ -73,7 +73,8 @@ class ValueOptions:
     self.options = {}
     people_utils = PeopleUtils(session=self.session)
     person = people_utils.get_person()
-    self.options["person_name"] = people_utils.get_person_name(person)
+    if person:
+      self.options["person_name"] = people_utils.get_person_name(person)
 
   def get_value_options(self):
     return self.options

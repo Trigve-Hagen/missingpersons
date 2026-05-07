@@ -15,7 +15,10 @@ class RequestApi:
     self.params = {}
     self.state = self.session.execute(select(State).filter_by(id = 1)).scalar_one_or_none()
     self.api = session.execute(select(Api).filter_by(id = self.state.api)).scalar_one_or_none()
-    self.apiFields = session.scalars(select(ApiField).filter_by(owner = self.api.id)).all()
+    self.api_id = 0
+    if self.api:
+      self.api_id = self.api.id
+    self.apiFields = session.scalars(select(ApiField).filter_by(owner = self.api_id)).all()
 
   def get_api(self):
     return self.session.execute(select(Api).filter_by(id = self.state.api)).scalar_one_or_none()

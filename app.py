@@ -569,12 +569,9 @@ def set_api():
 @app.route('/api_field')
 def api_field():
     all_api_fields = session.query(ApiField).all()
-
     value_options = ValueOptions(session=session)
     options = value_options.get_value_options()
-
     owner_select = session.query(Api).all()
-
     return flask.render_template('api_field.html', api_fields=all_api_fields, value_options=options, owners=owner_select)
 
 @app.route('/edit/api_field/<int:id>', methods=['GET', 'POST'])
@@ -640,7 +637,9 @@ def view_person():
 def call_apis():
   people_utils = PeopleUtils(session=session)
   person = people_utils.get_person()
-  person_name = people_utils.get_person_name(person)
+  person_name = ""
+  if person:
+    person_name = people_utils.get_person_name(person)
   request_api = RequestApi(session=session)
   api = request_api.get_api()
   api_params = request_api.get_api_params()
@@ -650,7 +649,9 @@ def call_apis():
 def call_api():
   people_utils = PeopleUtils(session=session)
   person = people_utils.get_person()
-  person_name = people_utils.get_person_name(person)
+  person_name = ""
+  if person:
+    person_name = people_utils.get_person_name(person)
   request_api = RequestApi(session=session)
   api = request_api.get_api()
   api_params = request_api.get_api_params()
