@@ -37,7 +37,7 @@
               <td scope="row">{{ model.id }}</td>
               <td>{{ model.name }}</td>
               <td>{{ model.type }}</td>
-              <td><a class="btn btn-secondary" href="{{ url_for('edit_model', id=model.id) }}">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="model" data-bs-item-id="{{ model.id }}" data-bs-item="{{ model.name }}">Delete</a></td>
+              <td><a class="btn btn-secondary" href="{{ url_for('edit_model', id=model.id) }}">Edit</a><a class="btn btn-secondary ms-2" href="{{ url_for('link_set_state', type='model', id=model.id) }}">Set State</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="model" data-bs-item-id="{{ model.id }}" data-bs-item="{{ model.name }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>

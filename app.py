@@ -96,6 +96,20 @@ def add_nosniff_header_to_static(response):
 def index():
   return flask.render_template('index.html')
 
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+  user_input = request.json.get('message')
+  manager = OllamaManager(session=session)
+  response = manager.prompt(user_input)
+  return jsonify({'response': response['message']['content']})
+
+@app.route('/chatbox')
+def chatbox():
+  user_input = ""
+  answer = ""
+
+  return flask.render_template('chatbox.html', user_input=user_input, answer=answer)
+
 @app.route('/model')
 def model():
   all_models = session.query(Model).all()
@@ -128,7 +142,7 @@ def edit_model(id):
 def set_model():
   form_data = request.form
   ollama_model = form_data.get('model')
-  manager = OllamaManager()
+  manager = OllamaManager(session=session)
   if not manager.is_model_downloaded(ollama_model):
     manager.download_model(ollama_model)
 
@@ -801,6 +815,51 @@ def filter_data():
 
   return flask.render_template('data.html', api=api, person_name=person_name, api_params=api_params, api_data=api_data, root_node=form_data.get('root_node'), display_type=form_data.get('display_type'), if_parsed=ifParsed)
 
+@app.route('/create/instance/<int:id>', methods=['GET', 'POST'])
+def create_instance(id):
+  model = session.get(Model, id)
+  model_params = session.execute(select(ModelParams).filter_by(id = id)).all()
+
+  parameters = {k: v for k, v in model_params}
+  manager = OllamaManager(session=session)
+  manager.create_model(model, parameters)
+
+  all_models = session.query(Model).all()
+
+  model_types = [
+    ('ollama', 'Ollama'),
+  ]
+  return flask.render_template('model.html', models=all_models, model_types=model_types)
+
+
+@app.route('/set/state/<string:type>/<int:id>', methods=['GET', 'POST'])
+def link_set_state(type, id):
+  # models = {'person': Person, 'model': Model, 'api': Api}
+  # name = models.get(type)
+
+  state = session.get(State, 1)
+  if state:
+    try:
+      if type == 'model':
+        state.model = id
+      elif type == 'person':
+        state.person = id
+      else:
+        state.api = id
+
+      session.commit()
+      flash(f"State set successfully!", "success")
+      return redirect(url_for(type))
+    except IntegrityError as e:
+      session.rollback()
+      error_msg = str(e.orig)
+      flash(f"Database Error: {error_msg}", "danger")
+      return redirect(url_for(type))
+    except Exception as e:
+      session.rollback()
+      flash(f"An unexpected error occurred: {str(e)}", "danger")
+      return redirect(url_for(type))
+
 @app.route('/delete_item', methods=['POST'])
 def delete_item():
   form_data = request.form
@@ -903,7 +962,7 @@ def delete_model():
     return redirect(url_for('resources'))
 
   try:
-    manager = OllamaManager()
+    manager = OllamaManager(session=session)
     manager.remove_model(item)
     flash(item + " deleted successfully!", "success")
     return redirect(url_for('resources'))
@@ -933,6 +992,12 @@ def getDisplayType():
   default_value = "json"
   return current_value or default_value
 
+def getModel():
+  state = session.get(State, 1)
+  current_value = state.model
+  default_value = 0
+  return current_value or default_value
+
 def getPerson():
   state = session.get(State, 1)
   current_value = state.person
@@ -954,7 +1019,7 @@ def set_state():
   path = form_data.get('path')
   state = session.get(State, 1)
   if state:
-    state.person = form_data.get('person')
+    state.model = form_data.get('model')
     state.api = form_data.get('api')
     session.commit()
 
@@ -972,6 +1037,14 @@ def get_state_api():
   return dict(state_apis=api_dict)
 
 @app.context_processor
+def get_state_models():
+  all_models = session.query(Model).all()
+  model_dict = {}
+  for model in all_models:
+    model_dict[model.id] = model.name
+  return dict(state_models=model_dict)
+
+@app.context_processor
 def get_state_persons():
   all_people = session.query(Person).all()
   person_dict = {}
@@ -983,10 +1056,12 @@ def get_state_persons():
 
 @app.context_processor
 def inject_site_settings():
+  model = getModel()
   person = getPerson()
   api = getApi()
   return dict(
     state_path = request.endpoint,
+    selected_model = model,
     selected_person = person,
     selected_api = api,
   )

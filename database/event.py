@@ -29,7 +29,7 @@ class Event(Base):
   description = Column(NullToEmptyString)
   owner = Column(Integer, ForeignKey("people.id"))
 
-  def __init__(self, ieventType, description, owner):
+  def __init__(self, eventType, description, owner):
     self.eventType = eventType
     self.description = description
     self.owner = owner

@@ -37,7 +37,7 @@
               <td scope="row">{{ person.id }}</td>
               <td>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</td>
               <td>{{ cat_name }}</td>
-              <td><a class="btn btn-secondary" href="{{ url_for('edit_person', id=person.id) }}">Edit</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="person" data-bs-item-id="{{ person.id }}" data-bs-item="{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}">Delete</a></td>
+              <td><a class="btn btn-secondary" href="{{ url_for('edit_person', id=person.id) }}">Edit</a><a class="btn btn-secondary ms-2" href="{{ url_for('link_set_state', type='person', id=person.id) }}">Set State</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="person" data-bs-item-id="{{ person.id }}" data-bs-item="{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}">Delete</a></td>
           </tr>
         {% endfor %}
       </tbody>

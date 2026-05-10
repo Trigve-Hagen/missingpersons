@@ -24,6 +24,6 @@ class Resources():
     return "Be here soon.."
 
   def ollama_models(self):
-    manager = OllamaManager()
+    manager = OllamaManager(session=self.session)
     models = manager.get_models()
     return models, f"{manager.get_ollama_storage_gb():.2f}GB"

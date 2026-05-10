@@ -1,14 +1,36 @@
 import os
+import re
 import platform
 import ollama
 from flask import flash
+from sqlalchemy import create_engine, inspect, exc, select, update
+from database.state import State
+from database.model import Model
 
 class OllamaManager:
-  def __init__(self):
+  def __init__(self, session):
+    self.session = session
     self.client = ollama.Client()
 
   def initialize():
     pass
+
+  def prompt(self, user_input):
+    state = self.session.execute(select(State).filter_by(id = 1)).scalar_one_or_none()
+    model = self.session.execute(select(Model).filter_by(id = state.model)).scalar_one_or_none()
+
+    if model:
+      try:
+        response = ollama.chat(model=model.model, messages=[
+          {'role': 'user', 'content': user_input},
+        ])
+        return response
+      except Exception as e:
+        flash(f"Error prompting models: {e}", "danger")
+        return False
+    else:
+      flash(f"Error fetching models: Please set a model.", "danger")
+      return False
 
   def get_models(self):
     """Lists all locally downloaded models."""
@@ -44,15 +66,25 @@ class OllamaManager:
       flash(f"Error fetching models: {e}", "danger")
       return False
 
-  def create_model(self, name, config):
-    print(f"Creating model: {name}...")
-    ollama.create(
-        model=name,
-        from_=config["from"],
-        system=config["system"],
-        parameters=config["parameters"]
-    )
-    print(f"Successfully built {name}")
+  def create_machine_name(self, text):
+    text = text.lower()
+    text = re.sub(r'[\s\-]+', '_', text)
+    text = re.sub(r'[^\w]', '', text)
+    return text.strip('_')
+
+  def create_model(self, model: Model, parameters):
+    try:
+      ollama.create(
+          model=self.create_machine_name(model.name),
+          from_=model.model,
+          system=model.system,
+          parameters=parameters
+      )
+      flash(f"Model {model.name} created successfully.", "success")
+      return True
+    except Exception as e:
+      flash(f"Error creating model: {e}", "danger")
+      return False
 
   def stop_model(self, model_name: str):
     """Stops/Unloads a model from memory."""
