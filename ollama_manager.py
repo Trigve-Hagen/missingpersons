@@ -10,13 +10,16 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_classic.chains.retrieval_qa.base import RetrievalQA
+from langchain_core.prompts import PromptTemplate
 
 class OllamaManager:
   def __init__(self, session):
     self.session = session
     self.client = ollama.Client()
     self.base_path = os.path.abspath(".")
-    self.persistent_directory = os.path.join(self.base_path, "database/chroma_db")
+    self.investigation_directory = os.path.join(self.base_path, "database/investigation_db")
+    self.investigation_optimize_directory = os.path.join(self.base_path, "database/investigation_optimize_db")
+    self.code_optimize_directory = os.path.join(self.base_path, "database/code_optimize_db")
     self.collection_name = "missing_persons"
     self.model_name = "phi3:mini"
 
@@ -34,15 +37,15 @@ class OllamaManager:
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
         # Load existing Chroma collection
-        if os.path.exists(self.persistent_directory):
+        if os.path.exists(self.self.investigation_directory):
             vectorstore = Chroma(
-                persist_directory=self.persistent_directory,
+                persist_directory=self.self.investigation_directory,
                 embedding_function=embeddings,
                 collection_name=self.collection_name
             )
         else:
-            # raise ValueError(f"Chroma collection not found at {self.persistent_directory}")
-            flash(f"Chroma collection not found at {self.persistent_directory}", "danger")
+            # raise ValueError(f"Chroma collection not found at {self.self.investigation_directory}")
+            flash(f"Chroma collection not found at {self.self.investigation_directory}", "danger")
             return False
 
         # Initialize Ollama model
@@ -70,8 +73,12 @@ class OllamaManager:
       flash(f"Error fetching models: Please set a model.", "danger")
       return False
 
-  def suggestions(self):
+  def suggestions(self, type='code'):
     model = "deepseek-coder-v2"
+    if type == 'code':
+      selected_directory = self.code_optimize_directory
+    else:
+      selected_directory = self.investigation_optimize_directory
 
     if model:
       try:
@@ -80,15 +87,14 @@ class OllamaManager:
         embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
         # Load existing Chroma collection
-        if os.path.exists(self.persistent_directory):
+        if os.path.exists(selected_directory):
             vectorstore = Chroma(
-                persist_directory=self.persistent_directory,
+                persist_directory=selected_directory,
                 embedding_function=embeddings,
                 collection_name=self.collection_name
             )
         else:
-            # raise ValueError(f"Chroma collection not found at {self.persistent_directory}")
-            flash(f"Chroma collection not found at {self.persistent_directory}", "danger")
+            flash(f"Chroma collection not found at {selected_directory}", "danger")
             return False
 
         # Initialize Ollama model
@@ -96,6 +102,40 @@ class OllamaManager:
 
         # Create Retriever
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        if type == 'code':
+          template = """
+                    Act as an expert software optimizer. Analyze the following code context and provide 10 specific, actionable suggestions to improve performance, readability, or security.
+
+                    Context: {context}
+                    Code to Optimize:
+                    {query}
+
+                    Return the output as a valid JSON list of objects, where each object has "suggestion" (string) and "impact" (string: high/medium/low).
+                    Example format:
+                    [
+                      {{"suggestion": "Use a generator instead of a list", "impact": "high"}},
+                      ...
+                    ]
+                    """
+        else:
+          template = """
+                    Act as an expert investigator. Analyze the following investigation context and provide 10 specific, actionable suggestions to improve the chances of finding the missing person and the person or persons responsible.
+
+                    Context: {context}
+                    Code to Optimize:
+                    {query}
+
+                    Return the output as a valid JSON list of objects, where each object has "suggestion" (string) and "impact" (string: high/medium/low).
+                    Example format:
+                    [
+                      {{"suggestion": "Suggestion 1", "impact": "high"}},
+                      ...
+                    ]
+                    """
+        prompt = PromptTemplate(
+            template=template,
+            input_variables=["context", "question"]
+        )
 
         try:
           # Create Chain
@@ -103,7 +143,7 @@ class OllamaManager:
               llm=llm,
               chain_type="stuff",
               retriever=retriever,
-              return_source_documents=False
+              chain_type_kwargs={"prompt": prompt}
           )
           return qa_chain
         except Exception as e:

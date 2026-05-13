@@ -41,6 +41,7 @@ import os
 import sys
 import math
 import time
+import json
 from werkzeug.utils import secure_filename
 from ollama_manager import OllamaManager
 from config import Config
@@ -208,47 +209,72 @@ def chatbox():
 
   return flask.render_template('chatbox.html', user_input=user_input, answer=answer)
 
-@app.route('/suggestions', methods=['GET', 'POST'])
-def suggestions():
-  user_input = request.json.get('message')
-  manager = OllamaManager(session=session)
-  qa_chain = manager.suggestions()
-  response = dict()
-  if qa_chain:
-    # Run chain
-    response = qa_chain.invoke({"query": user_input})
-  else:
-    response['result'] = "No data defined. To create data upload a pdf or save data from RSS or API."
-
-  return jsonify({'response': response['result']})
-
 @app.route('/notice')
 def notice():
   all_notices = session.query(Notice).all()
-  user_input = ""
-  answer = ""
-
-  return flask.render_template('notice.html', notices=all_notices, user_input=user_input, answer=answer)
+  return flask.render_template('notice.html', notices=all_notices)
 
 @app.route('/run_code_optimizer', methods=['POST'])
 def run_code_optimizer():
   all_notices = session.query(Notice).all()
-  user_input = ""
-  answer = ""
 
-  flash(f"Code Optimizer. Be here soon!", "success")
+  manager = OllamaManager(session=session)
+  qa_chain = manager.suggestions(type='code')
+  response = dict()
+  if qa_chain:
+    # Run chain
+    response = qa_chain.invoke({"query": "How can I improve on this code base?"})
+    try:
+      suggestions_data = json.loads(response)
 
-  return flask.render_template('notice.html', notices=all_notices, user_input=user_input, answer=answer)
+      # 3. Save to Database
+      for item in suggestions_data:
+          new_suggestion = Notice(
+            type="CodeOptimization",
+            notice=item['suggestion'],
+            impact=item['impact'],
+          )
+          session.add(new_suggestion)
+
+      session.commit()
+      flash(f"Successfully saved 10 code suggestions.", "success")
+    except json.JSONDecodeError:
+      flash(f"Failed to parse LLM response.", "danger")
+  else:
+    flash(f"No data defined. The database for code optimizations has not been created yet.", "info")
+
+  return flask.render_template('notice.html', notices=all_notices)
 
 @app.route('/run_investigation_optimizer', methods=['POST'])
 def run_investigation_optimizer():
   all_notices = session.query(Notice).all()
-  user_input = ""
-  answer = ""
 
-  flash(f"Investigation Optimizer. Be here soon!", "success")
+  manager = OllamaManager(session=session)
+  qa_chain = manager.suggestions(type='investigation')
+  response = dict()
+  if qa_chain:
+    # Run chain
+    response = qa_chain.invoke({"query": "How can I improve on this investigation?"})
+    try:
+      suggestions_data = json.loads(response)
 
-  return flask.render_template('notice.html', notices=all_notices, user_input=user_input, answer=answer)
+      # 3. Save to Database
+      for item in suggestions_data:
+          new_suggestion = Notice(
+            type="InvestigationOptimization",
+            notice=item['suggestion'],
+            impact=item['impact'],
+          )
+          session.add(new_suggestion)
+
+      session.commit()
+      flash(f"Successfully saved 10 investigation suggestions.", "success")
+    except json.JSONDecodeError:
+      flash(f"Failed to parse LLM response.", "danger")
+  else:
+    flash(f"No data defined. The database for investigation optimizations has not been created yet.", "info")
+
+  return flask.render_template('notice.html', notices=all_notices)
 
 @app.route('/set/notice/<int:id>', methods=['GET', 'POST'])
 def set_notice(id):

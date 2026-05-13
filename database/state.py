@@ -22,11 +22,14 @@ class Notice(Base):
   __tablename__ = "notices"
 
   id = Column("id", Integer, primary_key=True)
+  type = Column(NullToEmptyString)
   notice = Column(Text)
+  impact = Column(NullToEmptyString, default="low")
   ifRead = Column(Integer, default=0)
-  dateCreated = Column(DateTime)
+  dateCreated = Column(DateTime, server_default=func.now())
 
-  def __init__(self, notice, ifRead, dateCreated):
+  def __init__(self, type, notice, impact, ifRead):
+    self.type = type
     self.notice = notice
+    self.impact = impact
     self.ifRead = ifRead
-    self.dateCreated = dateCreated
