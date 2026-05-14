@@ -38,10 +38,6 @@
             <input type="text" class="form-control" id="model-model" name="model" value="{{ model_data.model }}" required>
           </div>
           <div class="col-md-6">
-            <label for="model-system" class="form-label">System</label>
-            <textarea class="form-control" id="model-system" name="system" rows="3">{{ model_data.system }}</textarea>
-          </div>
-          <div class="col-md-6">
             <label for="model-type" class="form-label">Type</label>
             <select class="form-select" id="model-type" name="type" required>
               {% for value, label in model_types %}

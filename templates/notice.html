@@ -37,12 +37,12 @@
           <tr>
               <td scope="row">{{ notice.title }}</td>
               <td>{{ notice.description }}</td>
-              <td>{{ notice.ifRead }}</td>
+              <td>{{ notice.ifComplete }}</td>
               <td>
-                {% if notice.ifRead == 0 %}
-                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifRead=1) }}">Read</a>
+                {% if notice.ifComplete == 0 %}
+                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifComplete=1) }}">Complete</a>
                 {% else %}
-                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifRead=0) }}">UnRead</a>
+                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifComplete=0) }}">Incomplete</a>
                 {% endif %}
                 <a class="btn btn-danger mt-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="notice" data-bs-item-id="{{ notice.id }}" data-bs-item="{{ notice.title }}">Delete</a></td>
               </td>
@@ -54,6 +54,8 @@
 </div>
 
 <hr>
+<!-- @TODO add forms -->
+<p>Going to add forms soon so you can also use it as a @TODO list.</p>
 
 <div class="row mt-4">
   <div class="col-md-12">

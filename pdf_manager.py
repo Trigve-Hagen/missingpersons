@@ -1,7 +1,3 @@
-# Break down each task that needs to be done when creating a RAG LLM.
-  # Choose the best sentence tranformer from the list of free transformers @ https://huggingface.co
-# Create models that handle each of these tasks.
-  # What is the best approach?
 import os
 import uuid
 from flask import flash
@@ -9,7 +5,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, PyPDFDirectoryLoader, TextLoader, DirectoryLoader, PythonLoader, UnstructuredHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-# Choose the best sentence tranformer from the list of free transformers @ https://huggingface.co
+
 class PdfManager():
   def __init__(self, filename):
     self.filename = filename

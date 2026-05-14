@@ -1,17 +1,11 @@
 import requests
-import json
 import feedparser
-import urllib.parse
-from jsonpath_ng import jsonpath, parse
+from jsonpath_ng import parse
 from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
 from flask import flash
-from sqlalchemy import create_engine, inspect, exc, select, update
+from sqlalchemy import select
 from database.state import State
-from database.category import Category
-from database.event import Event, Url, Question
-from database.news import News
 from database.apis import Api, ApiField
-from database.person import Person, Alias, Email, Phone, Address
 
 class RequestApi:
   def __init__(self, session):

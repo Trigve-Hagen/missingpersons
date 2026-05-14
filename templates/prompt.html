@@ -1,0 +1,67 @@
+<!-- templates/search.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Prompts{% endblock %}
+
+{% block content %}
+
+<h1 class="my-4">Prompts</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <div class="col-md-3">
+    {% include 'includes/sidebar_menu.html' %}
+  </div>
+  <div class="col-md-9">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Prompt</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prompt in prompts %}
+          <tr>
+              <td scope="row">{{ prompt.id }}</td>
+              <td>{{ prompt.prompt }}</td>
+              <td><a class="btn btn-secondary" href="{{ url_for('edit_prompt', id=prompt.id) }}">Edit</a><a class="btn btn-secondary ms-2" href="{{ url_for('link_set_state', type='prompt', id=prompt.id) }}">Set State</a><a class="btn btn-danger ms-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="prompt" data-bs-item-id="{{ prompt.id }}" data-bs-item="{{ prompt.name }}">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr>
+<h3 class="my-4">Add Prompt</h3>
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <form class="row g-4" action="/set_prompt" method="POST" name="prompt" autocomplete="off">
+      <input type="hidden" class="form-control" id="prompt-id" name="id" />
+      <div class="col-md-9">
+        <label for="prompt-prompt" class="form-label">Prompt</label>
+        <textarea class="form-control" id="prompt-prompt" name="prompt" rows="3"></textarea>
+        <div class="form-text" id="prompt-prompt-text">This is the part of the RAG LLM that defines what the models main directive is. It describes how the models robot will act and who it should believe it is. Play with this and take a course in Prompt Enginearing for better results. Example: Act as an expert software optimizer. The code in the following context is a flask application that uses data from form uploads and external sources combined with AI to aid in the search for missing persons. The external data comes from APIs, RSS feeds and uploaded data including text, images and documents. The application is converted to a console application using pywebview. The application needs to be as versatile as possible. Analyze the following code context and provide 10 specific, actionable suggestions to improve performance, readability, versatility, or security.</div>
+      </div>
+      <div class="col-12 mb-5">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% include 'includes/delete_modal.html' %}
+
+{% endblock %}

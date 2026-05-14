@@ -8,9 +8,11 @@ class State(Base):
   )
 
   id = Column(Integer, primary_key=True, default=1)
-  model = Column(Integer, default=0)
   person = Column(Integer, default=0)
+  model = Column(Integer, default=0)
   api = Column(Integer, default=0)
+  prompt = Column(Integer, default=0)
+  question = Column(Integer, default=0)
   processor = Column(NullToEmptyString, default="cpu")
   root_node = Column(NullToEmptyString, default="")
   files_size = Column(Integer, default=0)
@@ -26,11 +28,11 @@ class Notice(Base):
   type = Column(NullToEmptyString)
   title = Column(NullToEmptyString)
   description = Column(NullToEmptyString)
-  ifRead = Column(Integer, default=0)
+  ifComplete = Column(Integer, default=0)
   dateCreated = Column(DateTime, server_default=func.now())
 
-  def __init__(self, type, title, description, ifRead):
+  def __init__(self, type, title, description, ifComplete):
     self.type = type
     self.title = title
     self.description = description
-    self.ifRead = ifRead
+    self.ifComplete = ifComplete

@@ -1,0 +1,44 @@
+<!-- templates/search.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Edit Prompts{% endblock %}
+
+{% block content %}
+
+<h1 class="my-4">Edit Prompts</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <div class="col-md-12">
+    <a href="{{ url_for('prompt') }}" class="btn btn-primary mb-3">back</a>
+  </div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <form class="row g-4" action="/set_prompt" method="POST" name="prompt" autocomplete="off">
+      <input type="hidden" class="form-control" id="prompt-id" name="id" value="{{ prompt_data.id }}" />
+      <div class="col-md-9">
+        <label for="prompt-prompt" class="form-label">Prompt</label>
+        <textarea class="form-control" id="prompt-prompt" name="prompt" rows="3">{{ prompt_data.prompt }}</textarea>
+        <div class="form-text" id="prompt-prompt-text">This is the part of the RAG LLM that defines what the models main directive is. It describes how the models robot will act and who it should believe it is. An investigator or web developer.</div>
+      </div>
+      <div class="col-12 mb-5">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% include 'includes/delete_modal.html' %}
+
+{% endblock %}

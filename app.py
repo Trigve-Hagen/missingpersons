@@ -54,9 +54,8 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from database.base import Base
 from database.state import State, Notice
-from database.model import Model, ModelParams
+from database.model import Model, ModelParams, Prompt, Question
 from database.category import Category
-from database.event import Event, Url, Question
 from database.news import News
 from database.apis import Api, ApiField
 from database.person import Person, Alias, Email, Phone, Address, File
@@ -218,15 +217,23 @@ def notice():
 
 @app.route('/run_code_optimizer', methods=['POST'])
 def run_code_optimizer():
-  code_loader = CodeLoader(session=session)
+  code_loader = CodeLoader()
   code_loader.delete_code_chroma()
 
-  all_notices = session.query(Notice).all()
+  # all_notices = session.query(Notice).all()
 
   code_loader.ingest_python_repo(getProcessor())
 
+  if not getPrompt():
+    flash(f"Upload a prompt and then set it in State.", "danger")
+    return redirect(url_for('notice'))
+
+  if not getQuestion():
+    flash(f"Upload a question and then set it in State.", "danger")
+    return redirect(url_for('notice'))
+
   manager = OllamaManager(session=session)
-  response = manager.suggestions(type='code')
+  response = manager.suggestions(type='code', prompt=getPrompt().prompt, query=getQuestion().question)
   if response:
     try:
       for item in response.suggestions:
@@ -234,7 +241,7 @@ def run_code_optimizer():
           type="CodeOptimization",
           title=item.title,
           description=item.description,
-          ifRead=0,
+          ifComplete=0,
         )
         session.add(new_suggestion)
 
@@ -249,8 +256,21 @@ def run_code_optimizer():
 
 @app.route('/run_investigation_optimizer', methods=['POST'])
 def run_investigation_optimizer():
+
+  if not os.path.exists(os.path.join(os.path.abspath("."), "database\\chroma_db")):
+    flash(f"Upload data to optimize investigation.", "danger")
+    return redirect(url_for('notice'))
+
+  if not getPrompt():
+    flash(f"Upload a prompt and then set it in State.", "danger")
+    return redirect(url_for('notice'))
+
+  if not getQuestion():
+    flash(f"Upload a question and then set it in State.", "danger")
+    return redirect(url_for('notice'))
+
   manager = OllamaManager(session=session)
-  response = manager.suggestions(type='investigation')
+  response = manager.suggestions(type='investigation', prompt=getPrompt().prompt, query=getQuestion().question)
   if response:
     try:
       for item in response.suggestions:
@@ -258,7 +278,7 @@ def run_investigation_optimizer():
           type="InvestigationOptimization",
           title=item.title,
           description=item.description,
-          ifRead=0,
+          ifComplete=0,
         )
         session.add(new_suggestion)
 
@@ -271,13 +291,13 @@ def run_investigation_optimizer():
 
   return redirect(url_for('notice'))
 
-@app.route('/set/notice/<int:id>/<int:ifRead>', methods=['GET', 'POST'])
-def set_notice(id, ifRead):
+@app.route('/set/notice/<int:id>/<int:ifComplete>', methods=['GET', 'POST'])
+def set_notice(id, ifComplete):
 
   try:
     notice = session.execute(select(Notice).filter_by(id = id)).scalar_one_or_none()
     if notice:
-      notice.ifRead=ifRead
+      notice.ifComplete=ifComplete
       session.merge(notice)
       session.commit()
 
@@ -412,6 +432,100 @@ def set_model_params():
     session.rollback()
     flash(f"An unexpected error occurred: {str(e)}", "danger")
     return redirect(url_for('model_params'))
+
+@app.route('/prompt')
+def prompt():
+  all_prompts = session.query(Prompt).all()
+  return flask.render_template('prompt.html', prompts=all_prompts)
+
+@app.route('/edit/prompt/<int:id>', methods=['GET', 'POST'])
+def edit_prompt(id):
+  # Retrieve prompt or return 404
+  prompt = session.get(Prompt, id)
+  if not prompt:
+    return redirect(url_for('prompt'))
+
+  prompt_data = {
+      'id': prompt.id,
+      'prompt': prompt.prompt,
+  }
+  return flask.render_template('edit_prompt.html', edit_id=id, prompt_data=prompt_data)
+
+@app.route('/set_prompt', methods=['POST'])
+def set_prompt():
+  form_data = request.form
+
+  try:
+    prompt = session.execute(select(Prompt).filter_by(id = form_data.get('id'))).scalar_one_or_none()
+    if prompt:
+      uporadd = "updated"
+      prompt.prompt=form_data.get('prompt')
+    else:
+      uporadd = "added"
+      prompt = Prompt(
+        prompt=form_data.get('prompt'),
+      )
+    session.merge(prompt)
+    session.commit()
+
+    flash(f"Prompt {uporadd} successfully!", "success")
+    return redirect(url_for('prompt'))
+  except IntegrityError as e:
+    session.rollback()
+    error_msg = str(e.orig)
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('prompt'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('prompt'))
+
+@app.route('/question')
+def question():
+  all_questions = session.query(Question).all()
+  return flask.render_template('question.html', questions=all_questions)
+
+@app.route('/edit/question/<int:id>', methods=['GET', 'POST'])
+def edit_question(id):
+  # Retrieve question or return 404
+  question = session.get(Question, id)
+  if not question:
+    return redirect(url_for('question'))
+
+  question_data = {
+      'id': question.id,
+      'question': question.question,
+  }
+  return flask.render_template('edit_question.html', edit_id=id, question_data=question_data)
+
+@app.route('/set_question', methods=['POST'])
+def set_question():
+  form_data = request.form
+
+  try:
+    question = session.execute(select(Question).filter_by(id = form_data.get('id'))).scalar_one_or_none()
+    if question:
+      uporadd = "updated"
+      question.question=form_data.get('question')
+    else:
+      uporadd = "added"
+      question = Question(
+        question=form_data.get('question'),
+      )
+    session.merge(question)
+    session.commit()
+
+    flash(f"Prompt {uporadd} successfully!", "success")
+    return redirect(url_for('question'))
+  except IntegrityError as e:
+    session.rollback()
+    error_msg = str(e.orig)
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('question'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('question'))
 
 @app.route('/category')
 def category():
@@ -1027,6 +1141,10 @@ def link_set_state(type, id):
         state.model = id
       elif type == 'person':
         state.person = id
+      elif type == 'prompt':
+        state.prompt = id
+      elif type == 'question':
+        state.question = id
       else:
         state.api = id
 
@@ -1051,7 +1169,8 @@ def delete_item():
   models = {
     'person': Person, 'alias': Alias, 'address': Address, 'email': Email,
     'phone': Phone, 'file': File, 'category': Category, 'api': Api, 'notice': Notice,
-    'api_field': ApiField, 'model': Model, 'model_params': ModelParams
+    'api_field': ApiField, 'model': Model, 'model_params': ModelParams,
+    'prompt': Prompt, 'question': Question
   }
   model = models.get(table_type)
 
@@ -1188,6 +1307,16 @@ def delete_model():
 engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
+
+def getPrompt():
+  state = session.get(State, 1)
+  prompt = session.execute(select(Prompt).filter_by(id = state.prompt)).scalar_one_or_none()
+  return prompt
+
+def getQuestion():
+  state = session.get(State, 1)
+  prompt = session.execute(select(Question).filter_by(id = state.question)).scalar_one_or_none()
+  return prompt
 
 def getProcessor():
   state = session.get(State, 1)

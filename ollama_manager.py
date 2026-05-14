@@ -3,7 +3,7 @@ import re
 import platform
 import ollama
 from flask import flash
-from sqlalchemy import create_engine, inspect, exc, select, update
+from sqlalchemy import select
 from database.state import State
 from database.model import Model
 from langchain_chroma import Chroma
@@ -28,7 +28,6 @@ class OllamaManager:
     self.client = ollama.Client()
     self.base_path = os.path.abspath(".")
     self.investigation_directory = os.path.join(self.base_path, "database\\chroma_db")
-    # self.investigation_optimize_directory = os.path.join(self.base_path, "database\\investigation_optimize_db")
     self.code_optimize_directory = os.path.join(self.base_path, "database\\code_optimize_db")
     self.collection_name = "missing_persons"
     self.model_name = "phi3:mini"
@@ -83,7 +82,7 @@ class OllamaManager:
       flash(f"Error fetching models: Please set a model.", "danger")
       return False
 
-  def suggestions(self, type):
+  def suggestions(self, type, prompt, query):
     model = "deepseek-coder-v2"
     if type == 'code':
       selected_directory = self.code_optimize_directory
@@ -114,32 +113,23 @@ class OllamaManager:
         llm = ChatOllama(model=model, format="json", temperature=0.7)
 
         parser = PydanticOutputParser(pydantic_object=TaskList)
-        if type == 'code':
-          prompt = ChatPromptTemplate.from_template(
-            "Act as an expert software optimizer. The code in the following context is a flask application that uses data from form uploads and external sources combined with AI to aid in the search for missing persons. The external data comes from APIs, RSS feeds and uploaded data including text, images and documents. The application is coverted to a console application using pywebview. The application needs to be as versatile as possible. Analyze the following code context and provide 10 specific, actionable suggestions to improve performance, readability, versatility, or security.\n"
-            "Context: {context}\n"
-            "User Request: {query}\n"
-            "{format_instructions}"
-          )
-          query = "Suggest 10 changes I could do to the code base to optimize it."
-        else:
-          prompt = ChatPromptTemplate.from_template(
-            "Act as an expert investigator. Analyze the following investigation context and provide 10 specific, actionable suggestions to improve the chances of finding the missing person and the person or persons responsible.\n"
-            "Context: {context}\n"
-            "User Request: {query}\n"
-            "{format_instructions}"
-          )
-          query = "Suggest 10 changes I could make to the investigation to optimize it."
+        chat_prompt_template = ChatPromptTemplate.from_template(
+          "{prompt}\n"
+          "Context: {context}\n"
+          "User Request: {query}\n"
+          "{format_instructions}"
+        )
 
         try:
           # 4. Execute Chain
           context_docs = retriever.invoke(query)
           context_text = "\n".join([doc.page_content for doc in context_docs])
-          chain = prompt | llm | parser
+          chain = chat_prompt_template | llm | parser
           response = chain.invoke({
-              "context": context_text,
-              "query": query,
-              "format_instructions": parser.get_format_instructions()
+            "prompt": prompt,
+            "context": context_text,
+            "query": query,
+            "format_instructions": parser.get_format_instructions()
           })
           return response
         except Exception as e:

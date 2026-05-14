@@ -1,11 +1,4 @@
 import os
-from sqlalchemy import create_engine, inspect, exc, select, update
-from database.state import State
-from database.category import Category
-from database.event import Event, Url, Question
-from database.news import News
-from database.apis import Api, ApiField
-from database.person import Person, Alias, Email, Phone, Address
 from ollama_manager import OllamaManager
 
 class Resources():
