@@ -56,19 +56,10 @@
         {% if edit_id %}
           <input type="hidden" class="form-control" name="edit_id" value="{{ edit_id }}" />
         {% endif %}
-        <select  class="form-select mr-sm-2 mx-1" id="state-model" name="model" aria-label="Switch Model">
-          <option value="0">Choose Model</option>
-          {% if state_models %}
-            {% for key, value in state_models.items() %}
-              <option value="{{ key }}" {% if key == selected_model %} selected {% endif %}>{{ value }}</option>
-            {% endfor %}
-          {% endif %}
-        </select>
-        <select class="form-select mx-1" id="state-api" name="api" aria-label="Switch Api">
-          <option value="0">Choose Api</option>
-          {% if state_apis %}
-            {% for key, value in state_apis.items() %}
-              <option value="{{ key }}" {% if key == selected_api %} selected {% endif %}>{{ value }}</option>
+        <select  class="form-select mr-sm-2 mx-1" id="state-processor" name="processor" aria-label="Switch Processor">
+          {% if state_processors %}
+            {% for key, value in state_processors.items() %}
+              <option value="{{ key }}" {% if key == selected_processor %} selected {% endif %}>{{ value }}</option>
             {% endfor %}
           {% endif %}
         </select>

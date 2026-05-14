@@ -21,15 +21,15 @@
   <div class="col-md-12">
     <form class="row g-4" action="/set_application_state" method="POST" name="state" autocomplete="off">
       <div class="col-md-6">
-        <label for="state-if-gpu" class="form-label">If GPU</label>
-        <select class="form-select" id="state-if-gpu" name="if_gpu">
+        <label for="state-processor" class="form-label">If GPU</label>
+        <select class="form-select" id="state-processor" name="processor">
           <option value="">Choose...</option>
-          {% if state.if_gpu == 'cpu' %}
+          {% if state.processor == 'cpu' %}
             <option value="cpu" selected>CPU</option>
           {% else %}
             <option value="cpu">CPU</option>
           {% endif %}
-          {% if state.if_gpu == 'gpu' %}
+          {% if state.processor == 'gpu' %}
             <option value="gpu" selected>GPU</option>
           {% else %}
             <option value="gpu">GPU</option>

@@ -160,7 +160,7 @@ def set_file():
     file.save(save_path)
 
   pdf_manager = PdfManager(filename=safe_filename)
-  pdf_manager.save()
+  pdf_manager.save(getProcessor())
 
   try:
     file = session.execute(select(File).filter_by(id = form_data.get('id'))).scalar_one_or_none()
@@ -218,12 +218,12 @@ def notice():
 
 @app.route('/run_code_optimizer', methods=['POST'])
 def run_code_optimizer():
-  code_loader = CodeLoader()
+  code_loader = CodeLoader(session=session)
   code_loader.delete_code_chroma()
 
   all_notices = session.query(Notice).all()
 
-  code_loader.ingest_python_repo()
+  code_loader.ingest_python_repo(getProcessor())
 
   manager = OllamaManager(session=session)
   response = manager.suggestions(type='code')
@@ -1189,6 +1189,12 @@ engine = create_engine(f"sqlite:///{DATABASE}", echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+def getProcessor():
+  state = session.get(State, 1)
+  current_value = state.processor
+  default_value = "cpu"
+  return current_value or default_value
+
 def getRootNode():
   state = session.get(State, 1)
   current_value = state.root_node
@@ -1199,24 +1205,6 @@ def getDisplayType():
   state = session.get(State, 1)
   current_value = state.display_type
   default_value = "json"
-  return current_value or default_value
-
-def getModel():
-  state = session.get(State, 1)
-  current_value = state.model
-  default_value = 0
-  return current_value or default_value
-
-def getPerson():
-  state = session.get(State, 1)
-  current_value = state.person
-  default_value = 0
-  return current_value or default_value
-
-def getApi():
-  state = session.get(State, 1)
-  current_value = state.api
-  default_value = 0
   return current_value or default_value
 
 @app.route('/state')
@@ -1237,7 +1225,7 @@ def set_application_state():
   state = session.get(State, 1)
   if state:
     state.person = form_data.get('person')
-    state.if_gpu = form_data.get('if_gpu')
+    state.processor = form_data.get('processor')
     state.model = form_data.get('model')
     state.api = form_data.get('api')
     session.commit()
@@ -1253,8 +1241,7 @@ def set_state():
   path = form_data.get('path')
   state = session.get(State, 1)
   if state:
-    state.model = form_data.get('model')
-    state.api = form_data.get('api')
+    state.processor = form_data.get('processor')
     session.commit()
 
   if 'edit_id' in request.form:
@@ -1263,41 +1250,18 @@ def set_state():
     return redirect(url_for(path))
 
 @app.context_processor
-def get_state_api():
-  all_apis = session.query(Api).all()
-  api_dict = {}
-  for api in all_apis:
-    api_dict[api.id] = api.name
-  return dict(state_apis=api_dict)
-
-@app.context_processor
-def get_state_models():
-  all_models = session.query(Model).all()
-  model_dict = {}
-  for model in all_models:
-    model_dict[model.id] = model.name
-  return dict(state_models=model_dict)
-
-@app.context_processor
-def get_state_persons():
-  all_people = session.query(Person).all()
-  person_dict = {}
-  for person in all_people:
-    s1, s2, s3 = person.firstName, person.middleName, person.lastName
-    name = " ".join([s for s in [s1, s2, s3] if s])
-    person_dict[person.id] = name
-  return dict(state_people=person_dict)
+def get_state_processor():
+  processor_dict = {}
+  processor_dict["cpu"] = "CPU"
+  processor_dict["gpu"] = "GPU"
+  return dict(state_processors=processor_dict)
 
 @app.context_processor
 def inject_site_settings():
-  model = getModel()
-  person = getPerson()
-  api = getApi()
+  processor = getProcessor()
   return dict(
     state_path = request.endpoint,
-    selected_model = model,
-    selected_person = person,
-    selected_api = api,
+    selected_processor = processor,
   )
 
 def initialize_database(engine):

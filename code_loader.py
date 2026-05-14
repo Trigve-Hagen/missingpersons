@@ -23,7 +23,7 @@ class CodeLoader():
       flash(f"Error deleting {self.code_optimize_directory}: {e}", "danger")
       return False
 
-  def ingest_python_repo(self):
+  def ingest_python_repo(self, processor):
     # 1. Load Python files from the directory
     # LanguageParser automatically identifies code structures
     # fileTypes = [".py", ".html", ".css", ".js", ".txt"]
@@ -58,7 +58,7 @@ class CodeLoader():
     # 'all-MiniLM-L6-v2' is a fast, lightweight open-source model
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
-        model_kwargs={'device': 'cpu'} # Change to 'cuda' if GPU is available
+        model_kwargs={'device': processor} # Change to 'cuda' if GPU is available
     )
 
     # 4. Create and persist the Chroma DB

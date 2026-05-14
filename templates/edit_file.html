@@ -29,13 +29,13 @@
       <input type="hidden" class="form-control" id="file-id" name="id" value="{{ file_data.id }}" />
       <div class="col-md-6">
         <label for="file-type" class="form-label">Type</label>
-        <select class="form-select" id="file-type" name="type" required>
-          <option value="">Choose...</option>
+        <select class="form-select" id="file-type" name="type">
+          <option value="0">Choose...</option>
           {% for type in fileTypes %}
             {% if file_data.type == type.id %}
-              <option value="{{ type.id }}" data-id="{{ type.id }}" data-filedata="{{ file_data.type }}" selected>{{ type.name }}</option>
+              <option value="{{ type.id }}" selected>{{ type.name }}</option>
             {% else %}
-              <option value="{{ type.id }}" data-id="{{ type.id }}" data-filedata="{{ file_data.type }}">{{ type.name }}</option>
+              <option value="{{ type.id }}">{{ type.name }}</option>
             {% endif %}
           {% endfor %}
         </select>

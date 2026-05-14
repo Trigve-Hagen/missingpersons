@@ -17,7 +17,7 @@ class PdfManager():
     self.file_path = os.path.join(self.base_path, 'assets/files/', self.filename)
     self.database_path = os.path.join(self.base_path, "database/chroma_db")
 
-  def save(self):
+  def save(self, processor):
     loader = PyPDFLoader(self.file_path)
     pages = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
@@ -32,7 +32,7 @@ class PdfManager():
       chunk.metadata["source"] = os.path.basename(self.filename)
       chunk.metadata["chunk_index"] = i
 
-    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"})
+    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": processor})
     Chroma.from_documents(
       chunks,
       embedding_function,

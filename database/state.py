@@ -11,7 +11,7 @@ class State(Base):
   model = Column(Integer, default=0)
   person = Column(Integer, default=0)
   api = Column(Integer, default=0)
-  if_gpu = Column(NullToEmptyString, default="cpu")
+  processor = Column(NullToEmptyString, default="cpu")
   root_node = Column(NullToEmptyString, default="")
   files_size = Column(Integer, default=0)
   sql_alchemy_database_size = Column(Integer, default=0)
