@@ -128,8 +128,8 @@ def edit_file(id):
     }
 
     # get vectordb
-    pdf_manager = PdfManager(filename=file.filename)
-    pdf_manager.save()
+    # pdf_manager = PdfManager(filename=file.filename)
+    # pdf_manager.save()
 
     stmt = select(Category).where(Category.type == "fileType")
     fileType_select = session.execute(stmt).scalars().all()
@@ -245,12 +245,10 @@ def run_code_optimizer():
   else:
     flash(f"No data defined. The database for code optimizations has not been created yet.", "info")
 
-  return flask.render_template('notice.html', notices=all_notices)
+  return redirect(url_for('notice'))
 
 @app.route('/run_investigation_optimizer', methods=['POST'])
 def run_investigation_optimizer():
-  all_notices = session.query(Notice).all()
-
   manager = OllamaManager(session=session)
   response = manager.suggestions(type='investigation')
   if response:
@@ -265,13 +263,13 @@ def run_investigation_optimizer():
         session.add(new_suggestion)
 
       session.commit()
-      flash(f"Successfully saved 10 code suggestions.", "success")
+      flash(f"Successfully saved 10 investigation suggestions.", "success")
     except json.JSONDecodeError:
       flash(f"Failed to parse LLM response.", "danger")
   else:
     flash(f"No data defined. The database for code optimizations has not been created yet.", "info")
 
-  return flask.render_template('notice.html', notices=all_notices)
+  return redirect(url_for('notice'))
 
 @app.route('/set/notice/<int:id>/<int:ifRead>', methods=['GET', 'POST'])
 def set_notice(id, ifRead):
@@ -1220,6 +1218,31 @@ def getApi():
   current_value = state.api
   default_value = 0
   return current_value or default_value
+
+@app.route('/state')
+def state():
+  state = session.get(State, 1)
+  all_apis = session.query(Api).all()
+  all_models = session.query(Model).all()
+  all_people = session.query(Person).all()
+
+  return flask.render_template('state.html', state=state, apis=all_apis, models=all_models, people=all_people)
+
+@app.route('/set_application_state', methods=['POST'])
+def set_application_state():
+  form_data = request.form
+  if form_data is None:
+    return redirect(url_for('state'))
+
+  state = session.get(State, 1)
+  if state:
+    state.person = form_data.get('person')
+    state.if_gpu = form_data.get('if_gpu')
+    state.model = form_data.get('model')
+    state.api = form_data.get('api')
+    session.commit()
+
+  return redirect(url_for('state'))
 
 @app.route('/set_state', methods=['POST'])
 def set_state():

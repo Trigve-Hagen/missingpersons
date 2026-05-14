@@ -33,9 +33,9 @@
           <option value="">Choose...</option>
           {% for type in fileTypes %}
             {% if file_data.type == type.id %}
-              <option value="{{ type.id }}" data-check="{{ file_data.type }}" selected>{{ type.name }}</option>
+              <option value="{{ type.id }}" data-id="{{ type.id }}" data-filedata="{{ file_data.type }}" selected>{{ type.name }}</option>
             {% else %}
-              <option value="{{ type.id }}" data-check="{{ file_data.type }}">{{ type.name }}</option>
+              <option value="{{ type.id }}" data-id="{{ type.id }}" data-filedata="{{ file_data.type }}">{{ type.name }}</option>
             {% endif %}
           {% endfor %}
         </select>

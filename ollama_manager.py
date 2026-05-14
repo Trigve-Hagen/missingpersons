@@ -83,7 +83,7 @@ class OllamaManager:
       flash(f"Error fetching models: Please set a model.", "danger")
       return False
 
-  def suggestions(self, type='code'):
+  def suggestions(self, type):
     model = "deepseek-coder-v2"
     if type == 'code':
       selected_directory = self.code_optimize_directory
