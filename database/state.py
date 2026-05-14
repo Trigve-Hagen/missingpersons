@@ -23,13 +23,13 @@ class Notice(Base):
 
   id = Column("id", Integer, primary_key=True)
   type = Column(NullToEmptyString)
-  notice = Column(Text)
-  impact = Column(NullToEmptyString, default="low")
+  title = Column(NullToEmptyString)
+  description = Column(NullToEmptyString)
   ifRead = Column(Integer, default=0)
   dateCreated = Column(DateTime, server_default=func.now())
 
-  def __init__(self, type, notice, impact, ifRead):
+  def __init__(self, type, title, description, ifRead):
     self.type = type
-    self.notice = notice
-    self.impact = impact
+    self.title = title
+    self.description = description
     self.ifRead = ifRead

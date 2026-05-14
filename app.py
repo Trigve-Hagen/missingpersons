@@ -42,6 +42,7 @@ import sys
 import math
 import time
 import json
+import ast
 from werkzeug.utils import secure_filename
 from ollama_manager import OllamaManager
 from config import Config
@@ -63,6 +64,7 @@ from request_api import RequestApi
 from people_utils import PeopleUtils, ValueOptions
 from resources import Resources
 from pdf_manager import PdfManager
+from code_loader import CodeLoader
 
 import mimetypes
 mimetypes.add_type('application/javascript', '.js')
@@ -216,25 +218,25 @@ def notice():
 
 @app.route('/run_code_optimizer', methods=['POST'])
 def run_code_optimizer():
+  code_loader = CodeLoader()
+  code_loader.delete_code_chroma()
+
   all_notices = session.query(Notice).all()
 
-  manager = OllamaManager(session=session)
-  qa_chain = manager.suggestions(type='code')
-  response = dict()
-  if qa_chain:
-    # Run chain
-    response = qa_chain.invoke({"query": "How can I improve on this code base?"})
-    try:
-      suggestions_data = json.loads(response)
+  code_loader.ingest_python_repo()
 
-      # 3. Save to Database
-      for item in suggestions_data:
-          new_suggestion = Notice(
-            type="CodeOptimization",
-            notice=item['suggestion'],
-            impact=item['impact'],
-          )
-          session.add(new_suggestion)
+  manager = OllamaManager(session=session)
+  response = manager.suggestions(type='code')
+  if response:
+    try:
+      for item in response.suggestions:
+        new_suggestion = Notice(
+          type="CodeOptimization",
+          title=item.title,
+          description=item.description,
+          ifRead=0,
+        )
+        session.add(new_suggestion)
 
       session.commit()
       flash(f"Successfully saved 10 code suggestions.", "success")
@@ -250,39 +252,34 @@ def run_investigation_optimizer():
   all_notices = session.query(Notice).all()
 
   manager = OllamaManager(session=session)
-  qa_chain = manager.suggestions(type='investigation')
-  response = dict()
-  if qa_chain:
-    # Run chain
-    response = qa_chain.invoke({"query": "How can I improve on this investigation?"})
+  response = manager.suggestions(type='investigation')
+  if response:
     try:
-      suggestions_data = json.loads(response)
-
-      # 3. Save to Database
-      for item in suggestions_data:
-          new_suggestion = Notice(
-            type="InvestigationOptimization",
-            notice=item['suggestion'],
-            impact=item['impact'],
-          )
-          session.add(new_suggestion)
+      for item in response.suggestions:
+        new_suggestion = Notice(
+          type="InvestigationOptimization",
+          title=item.title,
+          description=item.description,
+          ifRead=0,
+        )
+        session.add(new_suggestion)
 
       session.commit()
-      flash(f"Successfully saved 10 investigation suggestions.", "success")
+      flash(f"Successfully saved 10 code suggestions.", "success")
     except json.JSONDecodeError:
       flash(f"Failed to parse LLM response.", "danger")
   else:
-    flash(f"No data defined. The database for investigation optimizations has not been created yet.", "info")
+    flash(f"No data defined. The database for code optimizations has not been created yet.", "info")
 
   return flask.render_template('notice.html', notices=all_notices)
 
-@app.route('/set/notice/<int:id>', methods=['GET', 'POST'])
-def set_notice(id):
+@app.route('/set/notice/<int:id>/<int:ifRead>', methods=['GET', 'POST'])
+def set_notice(id, ifRead):
 
   try:
     notice = session.execute(select(Notice).filter_by(id = id)).scalar_one_or_none()
     if notice:
-      notice.ifRead=1
+      notice.ifRead=ifRead
       session.merge(notice)
       session.commit()
 
@@ -1053,7 +1050,11 @@ def delete_item():
   form_data = request.form
   id = form_data.get('id')
   table_type = form_data.get('type')
-  models = {'person': Person, 'alias': Alias, 'address': Address, 'email': Email, 'phone': Phone, 'file': File, 'category': Category, 'api': Api, 'api_field': ApiField, 'model': Model, 'model_params': ModelParams}
+  models = {
+    'person': Person, 'alias': Alias, 'address': Address, 'email': Email,
+    'phone': Phone, 'file': File, 'category': Category, 'api': Api, 'notice': Notice,
+    'api_field': ApiField, 'model': Model, 'model_params': ModelParams
+  }
   model = models.get(table_type)
 
   # Specific check for Category child records

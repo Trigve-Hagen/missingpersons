@@ -10,16 +10,26 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_classic.chains.retrieval_qa.base import RetrievalQA
-from langchain_core.prompts import PromptTemplate
+from pydantic import BaseModel, Field
+from typing import List
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+
+class TaskSuggestion(BaseModel):
+    title: str = Field(description="Short title of the task")
+    description: str = Field(description="Detailed steps or context for the task")
+
+class TaskList(BaseModel):
+    suggestions: List[TaskSuggestion] = Field(description="List of exactly 10 task suggestions")
 
 class OllamaManager:
   def __init__(self, session):
     self.session = session
     self.client = ollama.Client()
     self.base_path = os.path.abspath(".")
-    self.investigation_directory = os.path.join(self.base_path, "database/investigation_db")
-    self.investigation_optimize_directory = os.path.join(self.base_path, "database/investigation_optimize_db")
-    self.code_optimize_directory = os.path.join(self.base_path, "database/code_optimize_db")
+    self.investigation_directory = os.path.join(self.base_path, "database\\chroma_db")
+    # self.investigation_optimize_directory = os.path.join(self.base_path, "database\\investigation_optimize_db")
+    self.code_optimize_directory = os.path.join(self.base_path, "database\\code_optimize_db")
     self.collection_name = "missing_persons"
     self.model_name = "phi3:mini"
 
@@ -34,7 +44,7 @@ class OllamaManager:
       try:
         # --- Initialize LangChain Components ---
         # Load HuggingFace Embeddings
-        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Load existing Chroma collection
         if os.path.exists(self.self.investigation_directory):
@@ -48,11 +58,11 @@ class OllamaManager:
             flash(f"Chroma collection not found at {self.self.investigation_directory}", "danger")
             return False
 
+        # Create Retriever
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
         # Initialize Ollama model
         llm = ChatOllama(model=model.model)
-
-        # Create Retriever
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
         try:
           # Create Chain
@@ -78,13 +88,13 @@ class OllamaManager:
     if type == 'code':
       selected_directory = self.code_optimize_directory
     else:
-      selected_directory = self.investigation_optimize_directory
+      selected_directory = self.investigation_directory
 
     if model:
       try:
         # --- Initialize LangChain Components ---
         # Load HuggingFace Embeddings
-        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Load existing Chroma collection
         if os.path.exists(selected_directory):
@@ -97,55 +107,41 @@ class OllamaManager:
             flash(f"Chroma collection not found at {selected_directory}", "danger")
             return False
 
-        # Initialize Ollama model
-        llm = ChatOllama(model=model.model)
-
         # Create Retriever
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
+        # Initialize Ollama model
+        llm = ChatOllama(model=model, format="json", temperature=0.7)
+
+        parser = PydanticOutputParser(pydantic_object=TaskList)
         if type == 'code':
-          template = """
-                    Act as an expert software optimizer. Analyze the following code context and provide 10 specific, actionable suggestions to improve performance, readability, or security.
-
-                    Context: {context}
-                    Code to Optimize:
-                    {query}
-
-                    Return the output as a valid JSON list of objects, where each object has "suggestion" (string) and "impact" (string: high/medium/low).
-                    Example format:
-                    [
-                      {{"suggestion": "Use a generator instead of a list", "impact": "high"}},
-                      ...
-                    ]
-                    """
+          prompt = ChatPromptTemplate.from_template(
+            "Act as an expert software optimizer. The code in the following context is a flask application that uses data from form uploads and external sources combined with AI to aid in the search for missing persons. The external data comes from APIs, RSS feeds and uploaded data including text, images and documents. The application is coverted to a console application using pywebview. The application needs to be as versatile as possible. Analyze the following code context and provide 10 specific, actionable suggestions to improve performance, readability, versatility, or security.\n"
+            "Context: {context}\n"
+            "User Request: {query}\n"
+            "{format_instructions}"
+          )
+          query = "Suggest 10 changes I could do to the code base to optimize it."
         else:
-          template = """
-                    Act as an expert investigator. Analyze the following investigation context and provide 10 specific, actionable suggestions to improve the chances of finding the missing person and the person or persons responsible.
-
-                    Context: {context}
-                    Code to Optimize:
-                    {query}
-
-                    Return the output as a valid JSON list of objects, where each object has "suggestion" (string) and "impact" (string: high/medium/low).
-                    Example format:
-                    [
-                      {{"suggestion": "Suggestion 1", "impact": "high"}},
-                      ...
-                    ]
-                    """
-        prompt = PromptTemplate(
-            template=template,
-            input_variables=["context", "question"]
-        )
+          prompt = ChatPromptTemplate.from_template(
+            "Act as an expert investigator. Analyze the following investigation context and provide 10 specific, actionable suggestions to improve the chances of finding the missing person and the person or persons responsible.\n"
+            "Context: {context}\n"
+            "User Request: {query}\n"
+            "{format_instructions}"
+          )
+          query = "Suggest 10 changes I could make to the investigation to optimize it."
 
         try:
-          # Create Chain
-          qa_chain = RetrievalQA.from_chain_type(
-              llm=llm,
-              chain_type="stuff",
-              retriever=retriever,
-              chain_type_kwargs={"prompt": prompt}
-          )
-          return qa_chain
+          # 4. Execute Chain
+          context_docs = retriever.invoke(query)
+          context_text = "\n".join([doc.page_content for doc in context_docs])
+          chain = prompt | llm | parser
+          response = chain.invoke({
+              "context": context_text,
+              "query": query,
+              "format_instructions": parser.get_format_instructions()
+          })
+          return response
         except Exception as e:
           flash(f"Error fetching chain: {e}", "danger")
           return False

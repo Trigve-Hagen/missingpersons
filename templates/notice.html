@@ -35,10 +35,17 @@
       <tbody>
         {% for notice in notices %}
           <tr>
-              <td scope="row">{{ notice.id }}</td>
-              <td>{{ notice.notice }}</td>
+              <td scope="row">{{ notice.title }}</td>
+              <td>{{ notice.description }}</td>
               <td>{{ notice.ifRead }}</td>
-              <td><a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id) }}">Mark Read</a></td>
+              <td>
+                {% if notice.ifRead == 0 %}
+                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifRead=1) }}">Read</a>
+                {% else %}
+                  <a class="btn btn-secondary" href="{{ url_for('set_notice', id=notice.id, ifRead=0) }}">UnRead</a>
+                {% endif %}
+                <a class="btn btn-danger mt-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-bs-item-type="notice" data-bs-item-id="{{ notice.id }}" data-bs-item="{{ notice.title }}">Delete</a></td>
+              </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -58,7 +65,7 @@
   </div>
 </div>
 
-<div class="row mt-4">
+<div class="row mt-4 mb-5">
   <div class="col-md-12">
     <form class="row g-4" action="/run_investigation_optimizer" method="POST" name="investigation_optimizer" autocomplete="off">
       <div class="col-12">
@@ -67,5 +74,7 @@
     </form>
   </div>
 </div>
+
+{% include 'includes/delete_modal.html' %}
 
 {% endblock %}
