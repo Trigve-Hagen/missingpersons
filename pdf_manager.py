@@ -66,16 +66,45 @@ class PdfManager():
     flash(f"Collection missing_persons saved {os.path.basename(filename)} successfully!", "success")
     return True
 
-  def get_collection(self, filename):
-    # get vector store
+  def get_chroma_data(self):
+    # Load the existing database
+    # Note: Use the same embedding function used when creating the DB
+    vector_db = self.get_vector_store()
+
+    # Retrieve all documents and their associated metadata
+    # include=["documents", "metadatas"] ensures we get the text and file info
+    collection = vector_db._client.get_collection(name=self.collection_name)
+    results = collection.get(include=["documents"])
+
+    data = []
+    if results and 'documents' in results:
+        for doc_id, doc_text in zip(results['ids'], results['documents']):
+          data.append({'id': doc_id, 'text': doc_text})
+    return data
+
+  def get_vector_by_id(self, id):
+    """
+    Searches the LangChain Chroma vector store and returns text for Flask.
+    """
+    # Load the existing database
+    # Note: Use the same embedding function used when creating the DB
     vector_store = self.get_vector_store()
 
-    # Get documents specifically from 'example.txt'
-    docs = vector_store.get(
-      where={"source": filename}
-    )
+    # Perform a similarity search to get matching Document objects
+    # You can also use vector_store.get(ids=["id1"]) if you have specific IDs
+    # results = vector_store.similarity_search(query, k=3)
+    results = vector_store.get(ids=[id])
 
-    print(docs['documents'])
+    # Extract page_content and metadata for the HTML template
+    view_data = []
+    for doc in results:
+      view_data.append({
+        "id": id,
+        "text": doc.page_content,
+        "source": doc.metadata.get("source", "Unknown")
+      })
+
+    return view_data
 
   def clean_filename(self, filename):
     # 1. Convert accented characters to ASCII equivalents (e.g., 'é' -> 'e')

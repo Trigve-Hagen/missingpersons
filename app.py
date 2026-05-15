@@ -126,14 +126,34 @@ def edit_file(id):
       'owner': file.owner
     }
 
-    # get vectordb
-    # pdf_manager = PdfManager(filename=file.filename)
-    # pdf_manager.save()
+    try:
+      pdf_manager = PdfManager()
+      data = pdf_manager.get_chroma_data()
+    except Exception as e:
+      flash(f"Error connecting to database: {e}", "danger")
+      return redirect(url_for('file'))
 
     stmt = select(Category).where(Category.type == "fileType")
     fileType_select = session.execute(stmt).scalars().all()
     owner_select = session.query(Person).all()
-    return flask.render_template('edit_file.html', edit_id=id, file_data=file_data, fileTypes=fileType_select, owners=owner_select)
+    return flask.render_template('edit_file.html', edit_id=id, file_data=file_data, data=data, fileTypes=fileType_select, owners=owner_select)
+
+@app.route('/edit/file/vectors/<string:id>', methods=['GET', 'POST'])
+def edit_file_vectors(id):
+    try:
+      pdf_manager = PdfManager()
+      data = pdf_manager.get_vector_by_id(id)
+    except Exception as e:
+      flash(f"Error connecting to database: {e}", "danger")
+      return redirect(url_for('file'))
+
+    vector_data = {
+      'id': data[0].id,
+      'text': data[0].text,
+      'source': data[0].source,
+    }
+
+    return flask.render_template('edit_file_vector.html', edit_id=id, vector_data=vector_data)
 
 @app.route('/set_file', methods=['POST'])
 def set_file():
