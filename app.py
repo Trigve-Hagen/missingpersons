@@ -661,8 +661,11 @@ def set_category():
 
 @app.route('/person')
 def person():
+  page = 1
+  per_page = 20  # Number of items per page
   stmt = select(Person, Category.name).join(Category, Person.type == Category.id)
-  all_people = session.execute(stmt).all()
+  paginated_stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+  all_people = session.execute(paginated_stmt).all()
   people_utils = PeopleUtils(session=session)
   height_options = people_utils.get_height_options()
   contactType_select, hair_color_codes, eye_colors = people_utils.people_params()

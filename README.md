@@ -18,6 +18,8 @@ Continue to collect and agregate the data daily to look for more clues.
 
 Was thinking this morning about having the program continue out wards in the tree from ground zero and automatically as it finds new acquaintances get an RSS feed for them and pull in their data. Your computer would always be searching and indexing new people in hope of finding a connection. I could set up a parameter for levels out. Also was thinking about a fine tunner agent that gives suggestions for fine tuning the LLM and your work on finding the person using this tool. The interesting concept is an agent that improves itself.
 
+It would be a good idea I would think to add as many missing people as you can find and the immediate people groups they will have so you can look for people that are in every group. In case the person is involved in a ring of abductions where the same person is doing recruiting or abducting.
+
 ### Donate
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=J8WY5PDLWGK6Y)
@@ -37,7 +39,7 @@ If you are interested in contributing please do! You are welcome to build in fea
 Build out the database for Person and Categories.
 - Eack link is a separate entity.
   - Categories - You can have different categories for people, phones, emails and addresses. Define your categories for each and they will show up in each of them when you add or edit rows.
-  - Person - A person is anyone you will search for information on through the APIs(next stage). The initial category I created for person was 'Missing Person'. You can change it or create others like 'Person of Interest' etc..
+  - Person - A person is anyone you will search for information on through the APIs(next stage). The initial category I created for person was 'Missing Person'. You can change the name of it or create others like 'Person of Interest' etc.. I would keep it in place though because it identifies the person as being missing. Every thing you save into the app is saved with a missing person as an owner. Every person besides the missing person must be owned by a missing person. Missing people will have 0 as an owner.
   - The rest are parts of a person, addresses, emails, phones and alias. They all have an owner which is a person entity.
   - View Person - A page to view people. Going to finish the main work first.
 
@@ -49,7 +51,6 @@ Build out the database and pages for consuming APIs. Users use a form to run the
   - State - The appication state is saved to help guild your workflow. The state form is included with every item listed in Person, Model, Api, prompt and question. Only one of each can be set at any time. Hit Set State to set an item in state. CPU/GPU is in the upper right corner. When you create ApiFields or call Apis you need to have the Person and the Api selected and saved in state. When using the Optomize buttons in notices you need to have some data stored in the Chroma vector database, the Prompt set and the question set.
 
 ### Stage 3
-
 Build out the vector database to save the API data for the Ollama model. Users can refine the data.
 - The vector database is Chroma.
 - The databases are in the database folder.
