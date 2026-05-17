@@ -29,6 +29,14 @@
       <li>Build out configuration for chunk strategies.</li>
       <li>Check for anything else in OllamaManager.
         <ul>
+          <li>Build classes for each component you might want to add more to
+            <ul>
+              <li>Documents loaders</li>
+              <li>See if it makes sense to have users adjust the chunk strategy Definately default for each type of chunk.</li>
+              <li>Embedding types</li>
+              <li>Models and Model Types</li>
+            </ul>
+          </li>
           <li>Update and remove the deprecated RetrievalQA.</li>
           <li>Run the code optimizer and check for other deprecated code.</li>
           <li>Look for unused code, find a python phpcs, phpstan, etc.., check if anything needs refactoring.</li>
@@ -36,6 +44,10 @@
       </li>
       <li>Build probability functionality and the other functions for Dashboard.</li>
       <li>Refactore managing the vector db for best resullts.</li>
+      <li>Refactor Categories to feel right. Something about its design feels off..
+        <ul>
+          <li>apiTypes, there cen be RSS and APIs. What about the key and secret fields, multiple calls. Still needs work.</li>
+        </ul>
       <li>Test and create release.</li>
     </ul>
   </div>

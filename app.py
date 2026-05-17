@@ -56,7 +56,7 @@ from database.base import Base
 from database.state import State, Notice
 from database.model import Model, ModelParams, Prompt, Question
 from database.apis import Api, ApiField
-from database.person import Category, Person, Alias, Email, Phone, Address, File
+from database.person import Category, Person, Alias, Email, Phone, Address, File, Event, Note
 from request_api import RequestApi
 from people_utils import PeopleUtils, ValueOptions
 from resources import Resources
@@ -137,8 +137,19 @@ def file():
   total = session.query(File).count()
   total_pages = (total + per_page - 1) // per_page
 
-  stmt = select(Category).where(Category.type == "fileType")
-  fileType_select = session.execute(stmt).scalars().all()
+  fileType_select = {
+    "svg": "SVG",
+    "gif": "GIF",
+    "jpg": "JPG",
+    "jpeg": "JPEG",
+    "png": "PNG",
+    "webp": "WebP",
+    "csv": "CSV",
+    "pdf": "PDF",
+    "xlsx": ".xlsx / Excel",
+    "xls": ".xls / Excel",
+    "word": "Word"
+  }
   owner_select = session.query(Person).all()
 
   return flask.render_template(
@@ -170,8 +181,19 @@ def edit_file(id):
       flash(f"Error connecting to database: {e}", "danger")
       return redirect(url_for('file'))
 
-    stmt = select(Category).where(Category.type == "fileType")
-    fileType_select = session.execute(stmt).scalars().all()
+    fileType_select = {
+      "svg": "SVG",
+      "gif": "GIF",
+      "jpg": "JPG",
+      "jpeg": "JPEG",
+      "png": "PNG",
+      "webp": "WebP",
+      "csv": "CSV",
+      "pdf": "PDF",
+      "xlsx": ".xlsx / Excel",
+      "xls": ".xls / Excel",
+      "word": "Word"
+    }
     owner_select = session.query(Person).all()
     return flask.render_template('edit_file.html', edit_id=id, file_data=file_data, data=data, fileTypes=fileType_select, owners=owner_select)
 
@@ -239,7 +261,7 @@ def set_file():
     clean_filename = pdf_manager.clean_filename(filename)
     safe_filename = f"{clean_filename}_{time.time_ns()}{filename_ext}"
     save_path = os.path.join(app.config['UPLOAD_FOLDER'], safe_filename)
-    file.save(save_path)
+    file.save_document(save_path)
 
   # save the file to vector_store
   pdf_manager.save(getProcessor(), filename=safe_filename)
@@ -649,7 +671,7 @@ def set_question():
     session.merge(question)
     session.commit()
 
-    flash(f"Prompt {uporadd} successfully!", "success")
+    flash(f"Question {uporadd} successfully!", "success")
     return redirect(url_for('question'))
   except IntegrityError as e:
     session.rollback()
@@ -673,7 +695,8 @@ def category():
     ('addressType', 'Address Type'),
     ('contactType', 'Contact Type'),
     ('emailType', 'Email Type'),
-    ('phoneType', 'Phone Type')
+    ('phoneType', 'Phone Type'),
+    ('eventType', 'Event Type')
   ]
   return flask.render_template(
     'category.html',
@@ -800,9 +823,22 @@ def edit_person(id):
     'gender': person.gender,
     'dob': person.dob.strftime('%Y-%m-%d'),
     'missing': person.dob.strftime('%Y-%m-%d'),
+    'description': person.description,
     'owner': person.owner
   }
-  return flask.render_template('edit_person.html', edit_id=id, contactTypes=contactType_select, height_options=height_options, weight_options=range(10, 401), hair_color_codes=hair_color_codes, eye_colors=eye_colors, suffixes=name_suffixes, sir_names=sir_names, person_data=person_data)
+  return flask.render_template(
+    'edit_person.html',
+    edit_id=id,
+    contactTypes=contactType_select,
+    height_options=height_options,
+    weight_options=range(10, 401),
+    hair_color_codes=hair_color_codes,
+    eye_colors=eye_colors,
+    suffixes=name_suffixes,
+    sir_names=sir_names,
+    person_data=person_data,
+    data=[]
+  )
 
 @app.route('/set_person', methods=['POST'])
 def set_person():
@@ -827,6 +863,7 @@ def set_person():
       user.gender=form_data.get('gender')
       user.dob=formatted_dob_date
       user.missing=formatted_missing_date
+      user.description=form_data.get('description'),
       user.owner=form_data.get('owner')
     else:
       uporadd = "added"
@@ -845,6 +882,7 @@ def set_person():
         gender=form_data.get('gender'),
         dob=formatted_dob_date,
         missing=formatted_missing_date,
+        description=form_data.get('description'),
         owner=form_data.get('owner')
       )
 
@@ -1173,6 +1211,151 @@ def set_email():
     flash(f"An unexpected error occurred: {str(e)}", "danger")
     return redirect(url_for('email'))
 
+@app.route('/event')
+def event():
+  page = request.args.get('page', 1, type=int)
+  offset = (page - 1) * per_page
+  all_events = session.query(Event).limit(per_page).offset(offset).all()
+  total = session.query(Event).count()
+  total_pages = (total + per_page - 1) // per_page
+
+  stmt = select(Category).where(Category.type == "eventType")
+  eventType_select = session.execute(stmt).scalars().all()
+  owner_select = session.query(Person).all()
+
+  return flask.render_template(
+    'event.html',
+    events=all_events,
+    page=page,
+    total_pages=total_pages,
+    eventTypes=eventType_select,
+    owners=owner_select
+  )
+
+@app.route('/edit/event/<int:id>', methods=['GET', 'POST'])
+def edit_event(id):
+    event = session.get(Event, id)
+    if not event:
+      return redirect(url_for('event'))
+
+    event_data = {
+        'id': event.id,
+        'type': event.type,
+        'name': event.name,
+        'dateFrom': event.dateFrom.strftime('%Y-%m-%d'),
+        'dateTo': to.strftime('%Y-%m-%d') if (to := event.dateTo) else None,
+        'event': event.description,
+        'owner': event.owner
+    }
+    stmt = select(Category).where(Category.type == "eventType")
+    eventType_select = session.execute(stmt).scalars().all()
+    owner_select = session.query(Person).all()
+    return flask.render_template('edit_event.html', edit_id=id, event_data=event_data, eventTypes=eventType_select, owners=owner_select)
+
+@app.route('/set_event', methods=['POST'])
+def set_event():
+  form_data = request.form
+  try:
+    event = session.execute(select(Event).filter_by(id = form_data.get('id'))).scalar_one_or_none()
+    formatted_dateFrom_date = datetime.strptime(form_data.get('dateFrom'), '%Y-%m-%d')
+    formatted_dateTo_date = datetime.strptime(date_str, '%Y-%m-%d') if (date_str := form_data.get('dateTo')) else None
+    if event:
+      uporadd = "updated"
+      event.type=form_data.get('type')
+      event.name=form_data.get('name')
+      event.dateFrom=formatted_dateFrom_date
+      event.dateTo=formatted_dateTo_date
+      event.description=form_data.get('description')
+      event.owner=form_data.get('owner')
+    else:
+      uporadd = "added"
+      event = Event(
+        type=form_data.get('type'),
+        name=form_data.get('name'),
+        dateFrom=formatted_dateFrom_date,
+        dateTo=formatted_dateTo_date,
+        description=form_data.get('description'),
+        owner=form_data.get('owner'),
+      )
+    session.merge(event)
+    session.commit()
+    flash(f"Event {uporadd} successfully!", "success")
+    return redirect(url_for('event'))
+  except IntegrityError as e:
+    session.rollback()
+    error_msg = str(e.orig)
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('event'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('event'))
+
+@app.route('/note')
+def note():
+  page = request.args.get('page', 1, type=int)
+  offset = (page - 1) * per_page
+  all_notes = session.query(Note).limit(per_page).offset(offset).all()
+  total = session.query(Note).count()
+  total_pages = (total + per_page - 1) // per_page
+
+  owner_select = session.query(Person).all()
+
+  return flask.render_template(
+    'note.html',
+    notes=all_notes,
+    page=page,
+    total_pages=total_pages,
+    owners=owner_select
+  )
+
+@app.route('/edit/note/<int:id>', methods=['GET', 'POST'])
+def edit_note(id):
+  # Retrieve note or return 404
+  note = session.get(Note, id)
+  if not note:
+    return redirect(url_for('note'))
+
+  note_data = {
+      'id': note.id,
+      'note': note.note,
+      'owner': note.owner,
+  }
+
+  owner_select = session.query(Person).all()
+  return flask.render_template('edit_note.html', edit_id=id, note_data=note_data, owners=owner_select)
+
+@app.route('/set_note', methods=['POST'])
+def set_note():
+  form_data = request.form
+
+  try:
+    note = session.execute(select(Note).filter_by(id = form_data.get('id'))).scalar_one_or_none()
+    if note:
+      uporadd = "updated"
+      note.note=form_data.get('note')
+      note.owner=form_data.get('owner')
+    else:
+      uporadd = "added"
+      note = Note(
+        note=form_data.get('note'),
+        owner=form_data.get('owner'),
+      )
+    session.merge(note)
+    session.commit()
+
+    flash(f"Note {uporadd} successfully!", "success")
+    return redirect(url_for('note'))
+  except IntegrityError as e:
+    session.rollback()
+    error_msg = str(e.orig)
+    flash(f"Database Error: {error_msg}", "danger")
+    return redirect(url_for('note'))
+  except Exception as e:
+    session.rollback()
+    flash(f"An unexpected error occurred: {str(e)}", "danger")
+    return redirect(url_for('note'))
+
 @app.route('/api')
 def api():
   page = request.args.get('page', 1, type=int)
@@ -1448,7 +1631,8 @@ def delete_item():
   table_type = form_data.get('type')
   models = {
     'person': Person, 'alias': Alias, 'address': Address, 'email': Email,
-    'phone': Phone, 'file': File, 'category': Category, 'api': Api, 'notice': Notice,
+    'phone': Phone, 'file': File, 'category': Category, 'api': Api,
+    'notice': Notice, 'event': Event, 'note': Note,
     'api_field': ApiField, 'model': Model, 'model_params': ModelParams,
     'prompt': Prompt, 'question': Question
   }
@@ -1460,6 +1644,7 @@ def delete_item():
   cat_email_count = session.query(Email).filter_by(type=id).count()
   cat_phone_count = session.query(Phone).filter_by(type=id).count()
   cat_file_count = session.query(File).filter_by(type=id).count()
+  cat_event_count = session.query(Event).filter_by(type=id).count()
   if table_type == 'category':
     if cat_person_count > 0:
       flash(f"Cannot delete: {table_type} has {cat_person_count} associated people. Delete them first.", "danger")
@@ -1476,13 +1661,18 @@ def delete_item():
     if cat_file_count > 0:
       flash(f"Cannot delete: {table_type} has {cat_file_count} associated files. Delete them first.", "danger")
       return redirect(url_for('category'))
+    if cat_event_count > 0:
+      flash(f"Cannot delete: {table_type} has {cat_event_count} associated events. Delete them first.", "danger")
+      return redirect(url_for('category'))
 
   # Specific check for Person child records
   alias_count = session.query(Alias).filter_by(owner=id).count()
   address_count = session.query(Address).filter_by(owner=id).count()
   email_count = session.query(Email).filter_by(owner=id).count()
   phone_count = session.query(Phone).filter_by(owner=id).count()
-  file_count = session.query(File).filter_by(type=id).count()
+  file_count = session.query(File).filter_by(owner=id).count()
+  event_count = session.query(Event).filter_by(owner=id).count()
+  note_count = session.query(Note).filter_by(owner=id).count()
   if table_type == 'person':
     if alias_count > 0:
       flash(f"Cannot delete: {table_type} has {alias_count} associated aliases. Delete them first.", "danger")
@@ -1498,6 +1688,12 @@ def delete_item():
       return redirect(url_for('person'))
     if file_count > 0:
       flash(f"Cannot delete: {table_type} has {file_count} associated files. Delete them first.", "danger")
+      return redirect(url_for('person'))
+    if event_count > 0:
+      flash(f"Cannot delete: {table_type} has {event_count} associated events. Delete them first.", "danger")
+      return redirect(url_for('person'))
+    if note_count > 0:
+      flash(f"Cannot delete: {table_type} has {note_count} associated notes. Delete them first.", "danger")
       return redirect(url_for('person'))
 
   # Specific check for Api child records
@@ -1682,28 +1878,33 @@ def initialize_database(engine):
     c2 = Category("addressType", "Home")
     c3 = Category("emailType", "Personal")
     c4 = Category("phoneType", "Home")
-    c5 = Category("fileType", "Image")
-    c6 = Category("fileType", "Csv")
-    c7 = Category("fileType", "Pdf")
-    c8 = Category("fileType", "Word")
-    c9 = Category("apiType", "Data API")
-    c10 = Category("apiType", "Model API")
+    c5 = Category("eventType", "Alibi")
+    c6 = Category("eventType", "Court")
     session.add(c1)
     session.add(c2)
     session.add(c3)
     session.add(c4)
     session.add(c5)
     session.add(c6)
-    session.add(c7)
-    session.add(c8)
-    session.add(c9)
-    session.add(c10)
     session.commit()
 
   settings = session.get(State, 1)
   if settings is None:
     initial_settings = State(id=1)
     session.add(initial_settings)
+    session.commit()
+
+  if session.query(Person).first() is None:
+    p1 = Person(
+      type=1, sirName="", firstName="Nancy", middleName="", lastName="Guthrie",
+      suffix="", height="", weight="", hairColor="", eyeColor="", ssn="",
+      description="", gender="female", dob=datetime(1942, 1, 27),
+      missing=datetime(2026, 2, 1), owner=0
+    )
+    session.add(p1)
+
+    state = session.get(State, 1)
+    state.person = 1
     session.commit()
 
   if session.query(Model).first() is None:
@@ -1713,7 +1914,6 @@ def initialize_database(engine):
       m1 = Model(name=model.model, model=model.model, type="ollama", system="")
       session.add(m1)
       session.commit()
-
 
 if __name__ == '__main__':
   initialize_database(engine)

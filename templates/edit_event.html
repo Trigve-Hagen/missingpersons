@@ -1,0 +1,80 @@
+<!-- templates/search.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Edit Event{% endblock %}
+
+{% block content %}
+
+<h1 class="my-4">Edit Event</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+  <div class="col-md-12">
+    <a href="{{ url_for('event') }}" class="btn btn-primary mb-3">back</a>
+  </div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <form class="row g-4" action="/set_event" method="POST" name="event" autocomplete="off">
+      <input type="hidden" class="form-control" id="event-id" name="id" value="{{ event_data.id }}" />
+      <div class="col-md-6">
+        <label for="event-type" class="form-label">Event Type</label>
+        <select class="form-select" id="event-type" name="type" required>
+          <option value="">Choose...</option>
+          {% for type in eventTypes %}
+            {% if event_data.type == type.id %}
+              <option value="{{ type.id }}" selected>{{ type.name }}</option>
+            {% else %}
+              <option value="{{ type.id }}">{{ type.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="event-owner" class="form-label">Person</label>
+        <select class="form-select" id="event-owner" name="owner">
+          <option value="0">Choose...</option>
+          {% for person in owners %}
+            {% if event_data.owner == person.id %}
+              <option value="{{ person.id }}" selected>{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
+            {% else %}
+              <option value="{{ person.id }}">{{ person.sirName }} {{ person.firstName }} {{ person.middleName }} {{ person.lastName }} {{ person.suffix }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="event-name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="event-name" name="name" value="{{ event_data.name }}" required>
+      </div>
+      <div class="col-md-4">
+        <label for="event-date-from" class="form-label">Date From or Date</label>
+        <input type="date" class="form-control" id="event-date-from" name="dateFrom" value="{{ event_data.dateFrom }}" required>
+      </div>
+      <div class="col-md-4">
+        <label for="event-date-to" class="form-label">Date To</label>
+        <input type="date" class="form-control" id="event-date-to" name="dateTo" value="{{ event_data.dateTo }}">
+      </div>
+      <div class="col-md-12">
+        <label for="event-description" class="form-label">Description</label>
+        <textarea class="form-control" id="event-description" name="description" rows="3">{{ event_data.description }}</textarea>
+        <div class="form-text" id="event-description-text">Events related to the missing person that might hold weight in the investigation.</div>
+      </div>
+      <div class="col-12 mb-5">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

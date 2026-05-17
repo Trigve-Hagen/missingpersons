@@ -7,6 +7,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, PyPDFDirectoryLoader, TextLoader, DirectoryLoader, PythonLoader, UnstructuredHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
 
 class PdfManager():
   def __init__(self):
@@ -22,7 +23,7 @@ class PdfManager():
       embedding_function=self.embeddings
     )
 
-  def save(self, processor, filename):
+  def save_document(self, processor, filename):
     loader = PyPDFLoader(os.path.join(os.path.abspath("."), 'assets/files/', filename))
     pages = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(
@@ -64,6 +65,42 @@ class PdfManager():
       persist_directory=self.persist_directory
     )
     flash(f"Collection missing_persons saved {os.path.basename(filename)} successfully!", "success")
+    return True
+
+  # @TODO the owner is a person and only if the main person is not a missing person.
+  def save_person(self, person, processor):
+    documents = []
+    text_chunk = repr(person)
+
+    metadata = {
+      "id": person.id,
+      "firstName": person.firstName,
+      "middleName": person.middleName,
+      "lastName": person.lastName,
+      "sirName": person.sirName,
+      "suffix": person.suffix,
+      "type": person.type,
+      "height": person.height,
+      "weight": person.weight,
+      "hairColor": person.hairColor,
+      "eyeColor": person.eyeColor,
+      "ssn": person.ssn,
+      "gender": person.gender,
+      "dob": person.dob,
+      "missing": person.missing,
+      "category": person.category.name if person.category else "Unknown",
+    }
+    documents.append(Document(page_content=text_chunk, metadata=metadata))
+
+    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": processor})
+    Chroma.from_documents(
+        documents=documents,
+        embedding=embedding_function,
+        collection_name=self.collection_name,
+        persist_directory=self.persist_directory
+    )
+
+    flash(f"Person saved to missing_persons successfully!", "success")
     return True
 
   def get_chroma_data(self):

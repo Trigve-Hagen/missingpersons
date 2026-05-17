@@ -27,6 +27,7 @@ class ModelParams(Base):
     self.value = value
     self.owner = owner
 
+# prompt are what the RAG LLM uses to define itself.
 class Prompt(Base):
   __tablename__ = "prompts"
 
@@ -36,6 +37,8 @@ class Prompt(Base):
   def __init__(self, prompt):
     self.prompt = prompt
 
+# Questions are the query part of RAG LLM. They are what the user would type
+# into te chat
 class Question(Base):
   __tablename__ = "questions"
 

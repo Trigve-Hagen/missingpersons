@@ -68,19 +68,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="col-md-3">
-            <label for="person-firstName" class="form-label">First name</label>
-            <input type="text" class="form-control" id="person-firstName" name="firstName" value="{{ person_data.firstName }}" required>
-          </div>
-          <div class="col-md-3">
-            <label for="person-middleName" class="form-label">Middle name</label>
-            <input type="text" class="form-control" id="person-middleName" name="middleName" value="{{ person_data.middleName }}" value="">
-          </div>
-          <div class="col-md-3">
-            <label for="person-lastName" class="form-label">Last name</label>
-            <input type="text" class="form-control" id="person-lastName" name="lastName" value="{{ person_data.lastName }}" required>
-          </div>
-          <div class="col-md-3">
+          <div class="col-md-6">
             <label for="person-suffix" class="form-label">Suffix</label>
             <select class="form-select" id="person-suffix" name="suffix">
               <option value="">Choose...</option>
@@ -93,6 +81,19 @@
               {% endfor %}
             </select>
           </div>
+          <div class="col-md-4">
+            <label for="person-firstName" class="form-label">First name</label>
+            <input type="text" class="form-control" id="person-firstName" name="firstName" value="{{ person_data.firstName }}" required>
+          </div>
+          <div class="col-md-4">
+            <label for="person-middleName" class="form-label">Middle name</label>
+            <input type="text" class="form-control" id="person-middleName" name="middleName" value="{{ person_data.middleName }}" value="">
+          </div>
+          <div class="col-md-4">
+            <label for="person-lastName" class="form-label">Last name</label>
+            <input type="text" class="form-control" id="person-lastName" name="lastName" value="{{ person_data.lastName }}" required>
+          </div>
+
           <div class="col-md-3">
             <label for="person-height" class="form-label">Height</label>
             <select class="form-select" id="person-height" name="height">
@@ -150,7 +151,7 @@
             <input type="text" class="form-control" id="person-ssn" name="ssn" pattern="^\d{3}-\d{2}-\d{4}$"
               placeholder="XXX-XX-XXXX" value="{{ person_data.ssn }}">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-6">
             <label for="person-gender" class="form-label">Gender</label>
             <select class="form-select" id="person-gender" name="gender" required>
               <option value="">Choose...</option>
@@ -166,13 +167,17 @@
               {% endif %}
             </select>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-6">
             <label for="person-dob" class="form-label">DOB</label>
             <input type="date" class="form-control" id="person-dob" name="dob" value="{{ person_data.dob }}" required>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-6">
             <label for="person-missing" class="form-label">Date Missing</label>
             <input type="date" class="form-control" id="person-missing" name="missing" value="{{ person_data.missing }}">
+          </div>
+          <div class="col-md-12">
+            <label for="person-description" class="form-label">Description</label>
+            <textarea class="form-control" id="person-description" name="description" rows="3">{{ person_data.description }}</textarea>
           </div>
           <div class="col-12 mb-5">
             <button class="btn btn-primary" type="submit">Save</button>
@@ -183,6 +188,32 @@
   </div>
 </div>
 
-{% include 'includes/delete_modal.html' %}
+<hr>
+<h3 class="my-4">Chunks</h3>
+
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Extracted Text (Preview)</th>
+          <th scope="col" class="col-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in data %}
+          <tr>
+              <td scope="row">{{ item.id }}</td>
+              <td>{{ item.text }}</td>
+              <td><a class="btn btn-secondary" href="{{ url_for('edit_file_vectors', id=item.id) }}">Edit</a><br /><a class="btn btn-danger mt-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteVectorModal" data-bs-item-file-id="{{ file_data.id }}" data-bs-item-id="{{ item.id }}" data-bs-item="{{ item.text }}">Delete</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% include 'includes/delete_vector_modal.html' %}
 
 {% endblock %}
