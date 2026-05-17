@@ -147,6 +147,32 @@
             </select>
           </div>
           <div class="col-md-6">
+            <label for="person-ethnicity" class="form-label">Ethnicity</label>
+            <select class="form-select" id="person-ethnicity" name="ethnicity">
+              <option value="">Choose...</option>
+              {% for value, label in ethnicities %}
+                {% if person_data.ethnicity == value %}
+                  <option value="{{ value }}" selected>{{ label }}</option>
+                {% else %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="person-primary-language" class="form-label">Primary Language</label>
+            <select class="form-select" id="person-primary-language" name="primaryLanguage">
+              <option value="">Choose...</option>
+              {% for value, label in primary_languages %}
+                {% if person_data.primaryLanguage == value %}
+                  <option value="{{ value }}" selected>{{ label }}</option>
+                {% else %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
             <label for="person-ssn" class="form-label">SSN</label>
             <input type="text" class="form-control" id="person-ssn" name="ssn" pattern="^\d{3}-\d{2}-\d{4}$"
               placeholder="XXX-XX-XXXX" value="{{ person_data.ssn }}">
@@ -173,7 +199,7 @@
           </div>
           <div class="col-md-6">
             <label for="person-missing" class="form-label">Date Missing</label>
-            <input type="date" class="form-control" id="person-missing" name="missing" value="{{ person_data.missing }}">
+            <input type="date" class="form-control" id="person-missing" name="missing" value="{{ person_data.missing }}" required>
           </div>
           <div class="col-md-12">
             <label for="person-description" class="form-label">Description</label>

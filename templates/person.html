@@ -147,6 +147,24 @@
         </select>
       </div>
       <div class="col-md-6">
+        <label for="person-ethnicity" class="form-label">Ethnicity</label>
+        <select class="form-select" id="person-ethnicity" name="ethnicity">
+          <option value="">Choose...</option>
+          {% for value, label in ethnicites %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="person-primary-language" class="form-label">Primary Language</label>
+        <select class="form-select" id="person-primary-language" name="primaryLanguage">
+          <option value="">Choose...</option>
+          {% for key, label in primary_languages %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
         <label for="person-ssn" class="form-label">SSN</label>
         <input type="text" class="form-control" id="person-ssn" name="ssn" pattern="^\d{3}-\d{2}-\d{4}$"
           placeholder="XXX-XX-XXXX">
@@ -164,12 +182,13 @@
         <input type="date" class="form-control" id="person-dob" name="dob" required>
       </div>
       <div class="col-md-6">
-        <label for="person-missing" class="form-label">Date Missing</label>
-        <input type="date" class="form-control" id="person-missing" name="missing">
+        <label for="person-missing" class="form-label">Date Missing or Known Since</label>
+        <input type="date" class="form-control" id="person-missing" name="missing" required>
       </div>
       <div class="col-md-12">
         <label for="person-description" class="form-label">Description</label>
         <textarea class="form-control" id="person-description" name="description" rows="3"></textarea>
+        <div class="form-text" id="question-question-text">Use this field to describe anything about the person that is not available to be added in the form. Scars, Tattos, Languages spoken, limps, handicaps, beliefs, habits, etc... Format the description so that the Type and Description are separated by a colon Example: 'Scars: has a small scar by the left eye. Tatoos: has a tattoo of a battle ship on the right shoulder.' etc.. This gets added to the chunk so its a good place for anything else you need to add.</div>
       </div>
       <div class="col-12 mb-5">
         <button class="btn btn-primary" type="submit">Save</button>

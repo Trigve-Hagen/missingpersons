@@ -21,11 +21,11 @@ class State(Base):
   question = Column(Integer, default=0)
   processor = Column(NullToEmptyString, default="cpu")
   root_node = Column(NullToEmptyString, default="")
+  display_type = Column(NullToEmptyString, default="")
   files_size = Column(Integer, default=0)
   sql_alchemy_database_size = Column(Integer, default=0)
   chroma_database_size = Column(Integer, default=0)
   ollama_models_size = Column(Integer, default=0)
-  display_type = Column(NullToEmptyString, default="")
 
 # Notices are the same as TODOs. The model is set to build 10 suggestions
 # at a time for anything you ask of it. This table is where those ten

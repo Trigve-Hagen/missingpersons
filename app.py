@@ -62,37 +62,11 @@ from people_utils import PeopleUtils, ValueOptions
 from resources import Resources
 from pdf_manager import PdfManager
 from code_loader import CodeLoader
+from selections import Selection
 
 import mimetypes
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
-
-per_page = 10
-
-available_devices = {
-  # Standard Devices
-  "cpu": "CPU", #Standard Central Processing Unit
-  "cuda": "NVIDIA GPU", # (shorthand for cuda:0)
-  # "cuda:0": "Specific NVIDIA GPU by index",
-
-  # Apple Silicon & Mobile
-  "mps": "MPS", # Metal Performance Shaders (Apple Silicon M1/M2/M3)
-  "npu": "NPU", # Neural Processing Unit (found in specialized AI hardware)
-
-  # Intel & Specialized Accelerators
-  "xpu": "XPU", # Intel Data Center or Arc GPU (requires Intel Extension for PyTorch)
-  "mlu": "MLU", # Cambricon MLU (requires Cambricon PyTorch extension)
-  "tpu": "TPU", # Google Cloud Tensor Processing Unit
-  "ipu": "IPU", # Graphcore Intelligence Processing Unit
-
-  # Emerging & Vendor Specific
-  "sdaa": "SDAA", # Metax specialized hardware accelerator
-  "musa": "MUSA", # Moore Threads MUSA GPU
-
-  # Automated Logic
-  "meta": "Meta", # Device used for loading large model skeletons without allocating RAM
-  None: "Auto-detects" # Auto-detects best available hardware (typically CUDA -> CPU)
-}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
@@ -132,24 +106,11 @@ def index():
 @app.route('/file')
 def file():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_files = session.query(File).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_files = session.query(File).limit(Selection.per_page).offset(offset).all()
   total = session.query(File).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
-  fileType_select = {
-    "svg": "SVG",
-    "gif": "GIF",
-    "jpg": "JPG",
-    "jpeg": "JPEG",
-    "png": "PNG",
-    "webp": "WebP",
-    "csv": "CSV",
-    "pdf": "PDF",
-    "xlsx": ".xlsx / Excel",
-    "xls": ".xls / Excel",
-    "word": "Word"
-  }
   owner_select = session.query(Person).all()
 
   return flask.render_template(
@@ -157,7 +118,7 @@ def file():
     files=all_files,
     page=page,
     total_pages=total_pages,
-    fileTypes=fileType_select,
+    fileTypes=Selection.fileType_select,
     owners=owner_select
   )
 
@@ -181,21 +142,8 @@ def edit_file(id):
       flash(f"Error connecting to database: {e}", "danger")
       return redirect(url_for('file'))
 
-    fileType_select = {
-      "svg": "SVG",
-      "gif": "GIF",
-      "jpg": "JPG",
-      "jpeg": "JPEG",
-      "png": "PNG",
-      "webp": "WebP",
-      "csv": "CSV",
-      "pdf": "PDF",
-      "xlsx": ".xlsx / Excel",
-      "xls": ".xls / Excel",
-      "word": "Word"
-    }
     owner_select = session.query(Person).all()
-    return flask.render_template('edit_file.html', edit_id=id, file_data=file_data, data=data, fileTypes=fileType_select, owners=owner_select)
+    return flask.render_template('edit_file.html', edit_id=id, file_data=file_data, data=data, fileTypes=Selection.fileType_select, owners=owner_select)
 
 @app.route('/edit/file/vectors/<string:id>', methods=['GET', 'POST'])
 def edit_file_vectors(id):
@@ -318,10 +266,10 @@ def chatbox():
 @app.route('/notice')
 def notice():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_notices = session.query(Notice).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_notices = session.query(Notice).limit(Selection.per_page).offset(offset).all()
   total = session.query(Notice).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   return flask.render_template(
     'notice.html',
@@ -431,20 +379,17 @@ def set_notice(id, ifComplete):
 @app.route('/model')
 def model():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_models = session.query(Model).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_models = session.query(Model).limit(Selection.per_page).offset(offset).all()
   total = session.query(Model).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
-  model_types = [
-    ('ollama', 'Ollama'),
-  ]
   return flask.render_template(
     'model.html',
     models=all_models,
     page=page,
     total_pages=total_pages,
-    model_types=model_types
+    model_types=Selection.model_types
   )
 
 @app.route('/edit/model/<int:id>', methods=['GET', 'POST'])
@@ -454,9 +399,6 @@ def edit_model(id):
   if not model:
     return redirect(url_for('model'))
 
-  model_types = [
-    ('ollama', 'Ollama'),
-  ]
   model_data = {
     'id': model.id,
     'name': model.name,
@@ -464,7 +406,7 @@ def edit_model(id):
     'type': model.type,
     'system': model.system
   }
-  return flask.render_template('edit_model.html', edit_id=id, model_data=model_data, model_types=model_types)
+  return flask.render_template('edit_model.html', edit_id=id, model_data=model_data, model_types=Selection.model_types)
 
 @app.route('/set_model', methods=['POST'])
 def set_model():
@@ -508,10 +450,10 @@ def set_model():
 @app.route('/model_params')
 def model_params():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_model_params = session.query(ModelParams).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_model_params = session.query(ModelParams).limit(Selection.per_page).offset(offset).all()
   total = session.query(ModelParams).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   owner_select = session.query(Model).all()
   return flask.render_template(
@@ -572,10 +514,10 @@ def set_model_params():
 @app.route('/prompt')
 def prompt():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_prompts = session.query(Prompt).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_prompts = session.query(Prompt).limit(Selection.per_page).offset(offset).all()
   total = session.query(Prompt).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   return flask.render_template(
     'prompt.html',
@@ -629,10 +571,10 @@ def set_prompt():
 @app.route('/question')
 def question():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_questions = session.query(Question).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_questions = session.query(Question).limit(Selection.per_page).offset(offset).all()
   total = session.query(Question).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   return flask.render_template(
     'question.html',
@@ -686,24 +628,17 @@ def set_question():
 @app.route('/category')
 def category():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_categories = session.query(Category).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_categories = session.query(Category).limit(Selection.per_page).offset(offset).all()
   total = session.query(Category).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
-  category_types = [
-    ('addressType', 'Address Type'),
-    ('contactType', 'Contact Type'),
-    ('emailType', 'Email Type'),
-    ('phoneType', 'Phone Type'),
-    ('eventType', 'Event Type')
-  ]
   return flask.render_template(
     'category.html',
     categories=all_categories,
     page=page,
     total_pages=total_pages,
-    category_types=category_types
+    category_types=Selection.category_types
   )
 
 @app.route('/edit/category/<int:id>', methods=['GET', 'POST'])
@@ -713,18 +648,12 @@ def edit_category(id):
   if not category:
     return redirect(url_for('category'))
 
-  category_types = [
-    ('addressType', 'Address Type'),
-    ('contactType', 'Contact Type'),
-    ('emailType', 'Email Type'),
-    ('phoneType', 'Phone Type')
-  ]
   category_data = {
       'id': category.id,
       'type': category.type,
       'name': category.name
   }
-  return flask.render_template('edit_category.html', edit_id=id, category_data=category_data, category_types=category_types)
+  return flask.render_template('edit_category.html', edit_id=id, category_data=category_data, category_types=Selection.category_types)
 
 @app.route('/set_category', methods=['POST'])
 def set_category():
@@ -759,16 +688,16 @@ def set_category():
 def person():
   # Define pagination settings
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
+  offset = (page - 1) * Selection.per_page
 
   stmt = select(Person, Category.name).join(Category, Person.type == Category.id)
 
   # 2. Get total items and calculate total pages (math.ceil ensures partial pages count as 1)
   total_items = session.scalar(select(func.count()).select_from(stmt.subquery()))
-  total_pages = math.ceil(total_items / per_page)
+  total_pages = math.ceil(total_items / Selection.per_page)
 
   # 3. Apply pagination to your statement and execute
-  paged_stmt = stmt.limit(per_page).offset(offset)
+  paged_stmt = stmt.limit(Selection.per_page).offset(offset)
   all_people = session.execute(paged_stmt).all()
 
   people_utils = PeopleUtils(session=session)
@@ -783,6 +712,8 @@ def person():
     page=page,
     total_pages=total_pages,
     contactTypes=contactType_select,
+    ethnicities=Selection.abstract_ethnicities,
+    primary_languages=Selection.primary_languages,
     height_options=height_options,
     weight_options=range(10, 401),
     hair_color_codes=hair_color_codes,
@@ -819,16 +750,20 @@ def edit_person(id):
     'weight': person.weight,
     'hairColor': person.hairColor,
     'eyeColor': person.eyeColor,
+    'ethnicity': person.ethnicity,
+    'primaryLanguage': person.primaryLanguage,
     'ssn': person.ssn,
     'gender': person.gender,
     'dob': person.dob.strftime('%Y-%m-%d'),
-    'missing': person.dob.strftime('%Y-%m-%d'),
+    'missing': person.missing.strftime('%Y-%m-%d'),
     'description': person.description,
     'owner': person.owner
   }
   return flask.render_template(
     'edit_person.html',
     edit_id=id,
+    ethnicities=Selection.abstract_ethnicities,
+    primary_languages=Selection.primary_languages,
     contactTypes=contactType_select,
     height_options=height_options,
     weight_options=range(10, 401),
@@ -859,11 +794,13 @@ def set_person():
       user.weight=form_data.get('weight')
       user.hairColor=form_data.get('hairColor')
       user.eyeColor=form_data.get('eyeColor')
+      user.ethnicity=form_data.get('ethnicity')
+      user.primaryLanguage=form_data.get('primaryLanguage')
       user.ssn=form_data.get('ssn')
       user.gender=form_data.get('gender')
       user.dob=formatted_dob_date
       user.missing=formatted_missing_date
-      user.description=form_data.get('description'),
+      user.description=form_data.get('description')
       user.owner=form_data.get('owner')
     else:
       uporadd = "added"
@@ -878,12 +815,14 @@ def set_person():
         weight=form_data.get('weight'),
         hairColor=form_data.get('hairColor'),
         eyeColor=form_data.get('eyeColor'),
+        ethnicity=form_data.get('ethnicity'),
+        primaryLanguage=form_data.get('primaryLanguage'),
         ssn=form_data.get('ssn'),
         gender=form_data.get('gender'),
         dob=formatted_dob_date,
         missing=formatted_missing_date,
         description=form_data.get('description'),
-        owner=form_data.get('owner')
+        owner=form_data.get('owner'),
       )
 
     session.merge(user)
@@ -903,10 +842,10 @@ def set_person():
 @app.route('/alias')
 def alias():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_aliases = session.query(Alias).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_aliases = session.query(Alias).limit(Selection.per_page).offset(offset).all()
   total = session.query(Alias).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   owner_select = session.query(Person).all()
   people_utils = PeopleUtils(session=session)
@@ -985,10 +924,10 @@ def set_alias():
 @app.route('/address')
 def address():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_addresses = session.query(Address).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_addresses = session.query(Address).limit(Selection.per_page).offset(offset).all()
   total = session.query(Address).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   stmt = select(Category).where(Category.type == "addressType")
   addressType_select = session.execute(stmt).scalars().all()
@@ -1076,10 +1015,10 @@ def set_address():
 @app.route('/phone')
 def phone():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_phones = session.query(Phone).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_phones = session.query(Phone).limit(Selection.per_page).offset(offset).all()
   total = session.query(Phone).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   stmt = select(Category).where(Category.type == "phoneType")
   phoneType_select = session.execute(stmt).scalars().all()
@@ -1145,10 +1084,10 @@ def set_phone():
 @app.route('/email')
 def email():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_emails = session.query(Email).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_emails = session.query(Email).limit(Selection.per_page).offset(offset).all()
   total = session.query(Email).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   stmt = select(Category).where(Category.type == "emailType")
   emailType_select = session.execute(stmt).scalars().all()
@@ -1214,10 +1153,10 @@ def set_email():
 @app.route('/event')
 def event():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_events = session.query(Event).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_events = session.query(Event).limit(Selection.per_page).offset(offset).all()
   total = session.query(Event).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   stmt = select(Category).where(Category.type == "eventType")
   eventType_select = session.execute(stmt).scalars().all()
@@ -1239,13 +1178,13 @@ def edit_event(id):
       return redirect(url_for('event'))
 
     event_data = {
-        'id': event.id,
-        'type': event.type,
-        'name': event.name,
-        'dateFrom': event.dateFrom.strftime('%Y-%m-%d'),
-        'dateTo': to.strftime('%Y-%m-%d') if (to := event.dateTo) else None,
-        'event': event.description,
-        'owner': event.owner
+      'id': event.id,
+      'type': event.type,
+      'name': event.name,
+      'dateFrom': event.dateFrom.strftime('%Y-%m-%d'),
+      'dateTo': to.strftime('%Y-%m-%d') if (to := event.dateTo) else None,
+      'event': event.description,
+      'owner': event.owner
     }
     stmt = select(Category).where(Category.type == "eventType")
     eventType_select = session.execute(stmt).scalars().all()
@@ -1294,10 +1233,10 @@ def set_event():
 @app.route('/note')
 def note():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_notes = session.query(Note).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_notes = session.query(Note).limit(Selection.per_page).offset(offset).all()
   total = session.query(Note).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   owner_select = session.query(Person).all()
 
@@ -1317,9 +1256,9 @@ def edit_note(id):
     return redirect(url_for('note'))
 
   note_data = {
-      'id': note.id,
-      'note': note.note,
-      'owner': note.owner,
+    'id': note.id,
+    'note': note.note,
+    'owner': note.owner,
   }
 
   owner_select = session.query(Person).all()
@@ -1359,10 +1298,10 @@ def set_note():
 @app.route('/api')
 def api():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_apis = session.query(Api).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_apis = session.query(Api).limit(Selection.per_page).offset(offset).all()
   total = session.query(Api).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   return flask.render_template(
     'api.html',
@@ -1428,10 +1367,10 @@ def set_api():
 @app.route('/api_field')
 def api_field():
   page = request.args.get('page', 1, type=int)
-  offset = (page - 1) * per_page
-  all_api_fields = session.query(ApiField).limit(per_page).offset(offset).all()
+  offset = (page - 1) * Selection.per_page
+  all_api_fields = session.query(ApiField).limit(Selection.per_page).offset(offset).all()
   total = session.query(ApiField).count()
-  total_pages = (total + per_page - 1) // per_page
+  total_pages = (total + Selection.per_page - 1) // Selection.per_page
 
   value_options = ValueOptions(session=session)
   options = value_options.get_value_options()
@@ -1452,11 +1391,11 @@ def edit_api_field(id):
       return redirect(url_for('api_field'))
 
     api_field_data = {
-        'id': api_field.id,
-        'field': api_field.field,
-        'value': api_field.value,
-        'description': api_field.description,
-        'owner': api_field.owner
+      'id': api_field.id,
+      'field': api_field.field,
+      'value': api_field.value,
+      'description': api_field.description,
+      'owner': api_field.owner
     }
 
     value_options = ValueOptions(session=session)
@@ -1572,8 +1511,6 @@ def create_instance(id):
 
 @app.route('/set/state/<string:type>/<int:id>', methods=['GET', 'POST'])
 def link_set_state(type, id):
-  # models = {'person': Person, 'model': Model, 'api': Api}
-  # name = models.get(type)
 
   state = session.get(State, 1)
   if state:
@@ -1820,7 +1757,17 @@ def application_state():
   all_prompts = session.query(Prompt).all()
   all_questions = session.query(Question).all()
   state = session.get(State, 1)
-  return flask.render_template('application_state.html', state=state, available_devices=available_devices, people=all_people, apis=all_apis, models=all_models, prompts=all_prompts, questions=all_questions)
+
+  return flask.render_template(
+    'application_state.html',
+    state=state,
+    available_devices=Selection.available_devices,
+    people=all_people,
+    apis=all_apis,
+    models=all_models,
+    prompts=all_prompts,
+    questions=all_questions
+  )
 
 @app.route('/set_application_state', methods=['POST'])
 def set_application_state():
@@ -1859,7 +1806,7 @@ def set_state():
 
 @app.context_processor
 def get_state_processor():
-  return dict(state_processors=available_devices)
+  return dict(state_processors=Selection.available_devices)
 
 @app.context_processor
 def inject_site_settings():
@@ -1899,12 +1846,33 @@ def initialize_database(engine):
       type=1, sirName="", firstName="Nancy", middleName="", lastName="Guthrie",
       suffix="", height="", weight="", hairColor="", eyeColor="", ssn="",
       description="", gender="female", dob=datetime(1942, 1, 27),
-      missing=datetime(2026, 2, 1), owner=0
+      missing=datetime(2026, 2, 1), owner=0, ethnicity="white",
+      primaryLanguage="english"
     )
     session.add(p1)
 
     state = session.get(State, 1)
     state.person = 1
+    session.commit()
+
+  if session.query(Api).first() is None:
+    a1 = Api(
+      name="FBI", type="api", url="https://api.fbi.gov/wanted/v1/list",
+      key='', secret='', description=''
+    )
+    session.add(a1)
+
+    state = session.get(State, 1)
+    state.api = 1
+    state.root_node = "items"
+    state.display_type = "table"
+    session.commit()
+
+  if session.query(ApiField).first() is None:
+    a1 = ApiField(
+      field="title", value="Nancy Guthrie", description='', owner=1
+    )
+    session.add(a1)
     session.commit()
 
   if session.query(Model).first() is None:

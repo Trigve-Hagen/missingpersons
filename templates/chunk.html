@@ -23,13 +23,14 @@
     <h3 class="my-2">Finish up stuff</h3>
     <p>Configuration page for chunk strategies. Last steps to Release:</p>
     <ul>
-      <li>Create objects from all data in Person, Alias, Phone, etc.. entities.</li>
-      <li>Save them to the chroma db when you create them. Create the edit, delete functions.</li>
+      <li>
+      <li>Create value objects/strings from all data in Person, Alias, Phone, etc.. entities to give as suggestions for the value field in Api Field so you don't have to remember or type them out.</li>
+      <li>Finish chroma db when you create person, get data from Api, or upload Ducuments. Create the edit, delete functions for person, get data from Api, and upload Ducuments and create the delete all for all data in croma db.</li>
       <li>Make sure that the models can be switched on all chats and prompts on the Notice page.</li>
-      <li>Build out configuration for chunk strategies.</li>
+      <li>Build out configuration for chunk strategies so they can be optimized for best results per document?</li>
       <li>Check for anything else in OllamaManager.
         <ul>
-          <li>Build classes for each component you might want to add more to
+          <li>Build classes for each component you might want to add more to in future releaseses (scalability)
             <ul>
               <li>Documents loaders</li>
               <li>See if it makes sense to have users adjust the chunk strategy Definately default for each type of chunk.</li>
@@ -43,10 +44,12 @@
         </ul>
       </li>
       <li>Build probability functionality and the other functions for Dashboard.</li>
-      <li>Refactore managing the vector db for best resullts.</li>
+      <li>Refactore deleting the vector db for best resullts.</li>
+      <li>Running multiple instances of a model?</li>
       <li>Refactor Categories to feel right. Something about its design feels off..
         <ul>
-          <li>apiTypes, there cen be RSS and APIs. What about the key and secret fields, multiple calls. Still needs work.</li>
+          <li>apiTypes need to be har coded, RSS and APIs need to hard coded. Key and secret fields and different configurations of API calls. Still needs work.</li>
+          <li>Hooking in OpenAI, Grok or Claude so you can run the investigation on there models with their GPUs but using your RAG data for a faster experience.</li>
         </ul>
       <li>Test and create release.</li>
     </ul>

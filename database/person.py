@@ -36,6 +36,8 @@ class Person(Base):
   ssn = Column(NullToEmptyString)
   gender = Column(NullToEmptyString)
   dob = Column(DateTime)
+  ethnicity = Column(NullToEmptyString)
+  primaryLanguage = Column("primary_language", NullToEmptyString)
   missing = Column(DateTime)
   description = Column(Text)
   owner = Column(Integer, default=0)
@@ -48,7 +50,7 @@ class Person(Base):
   events = relationship("Event", backref="person")
   notes = relationship("Note", backref="person")
 
-  def __init__(self, firstName, middleName, lastName, sirName, suffix, type, height, weight, hairColor, eyeColor, ssn, gender, dob, missing, description, owner):
+  def __init__(self, firstName, middleName, lastName, sirName, suffix, type, height, weight, hairColor, eyeColor, ssn, gender, dob, ethnicity, primaryLanguage, missing, description, owner):
     self.firstName = firstName
     self.middleName = middleName
     self.lastName = lastName
@@ -62,6 +64,8 @@ class Person(Base):
     self.ssn = ssn
     self.gender = gender
     self.dob = dob
+    self.ethnicity = ethnicity
+    self.primaryLanguage = primaryLanguage
     self.missing = missing
     self.description = description
     self.owner = owner
@@ -86,31 +90,21 @@ class Person(Base):
     if self.gender == 'male':
       gender = 'He'
 
-    person_text = f"Person {name} is a {cat_name}. {gender} is {age} years old. "
+    missing_text = "has been a contact since"
     if cat_name == "Missing Person":
-      person_text += f"{gender} went missing on {missing_date}. "
+      missing_text = "went missing on"
 
     # 2. Build the sentence chunk
-    if cat_name == "Missing Person":
-      chunk = (
-        f"Person: {name} is a {cat_name}. {gender} is {age} years old. {gender} went missing on {missing_date}. {self.description}. "
-        f"Physical traits: {self.height} tall, {self.weight} weight, {self.eyeColor} eyes, {self.hairColor} hair. "
-        f"Contact information includes emails: {emails_list}, and phones: {phones_list}. "
-        f"Addresses are registered at: {addresses_list}. "
-        f"Known aliases for this person are: {aliases_list}."
-        f"Events for this person are: {events_list}."
-        f"Notes for this person are: {notes_list}."
-      )
-    else:
-      chunk = (
-        f"Person: {name} is a {cat_name}. {gender} is {age} years old. {self.description}. "
-        f"Physical traits: {self.height} tall, {self.weight} weight, {self.eyeColor} eyes, {self.hairColor} hair. "
-        f"Contact information includes emails: {emails_list}, and phones: {phones_list}. "
-        f"Addresses are registered at: {addresses_list}. "
-        f"Known aliases for this person are: {aliases_list}."
-        f"Events for this person are: {events_list}."
-        f"Notes for this person are: {notes_list}."
-      )
+    chunk = (
+      f"Person: {name} is a {cat_name}. {gender} is {age} years old. {gender} {missing_text} {missing_date}. {self.description}. "
+      f"Physical traits: {self.height} tall, {self.weight} weight, {self.eyeColor} eyes, {self.hairColor} hair. "
+      f"Ethnicity: of {self.ethnicity} decent, primary language is {self.primaryLanguage}. "
+      f"Contact information includes emails: {emails_list}, and phones: {phones_list}. "
+      f"Addresses are registered at: {addresses_list}. "
+      f"Known aliases for this person are: {aliases_list}."
+      f"Events for this person are: {events_list}."
+      f"Notes for this person are: {notes_list}."
+    )
     return chunk
 
 # Aliases associated with the person.
